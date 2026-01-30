@@ -1,0 +1,25 @@
+# Godot editor cache
+.godot/
+
+# Android
+/android/
+.nomedia
+
+# Imported resources
+.import/
+
+# Export config
+export.cfg
+export_credentials.cfg
+
+# Translations
+*.translation
+
+# Mono / C#
+.mono/
+data_*/
+mono_crash.*.json
+
+# OS junk
+.DS_Store
+Thumbs.db
