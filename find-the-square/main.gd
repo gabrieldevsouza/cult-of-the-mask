@@ -10,18 +10,34 @@ const SPEED_MAX := 150.0
 var score := 0
 var target_square: ColorRect = null
 var square_velocities: Dictionary = {}  # Armazena velocidade de cada quadrado
+var game_started := false
 
 @onready var score_label: Label = $UI/ScoreLabel
 @onready var message_label: Label = $UI/MessageLabel
 @onready var squares_container: Node2D = $Squares
 
+const DIALOGUE_RESOURCE = preload("res://dialogues/test_dialogue.dialogue")
+
 
 func _ready() -> void:
 	randomize()
+	start_dialogue()
+
+
+func start_dialogue() -> void:
+	DialogueManager.dialogue_ended.connect(_on_dialogue_ended)
+	DialogueManager.show_dialogue_balloon(DIALOGUE_RESOURCE, "start")
+
+
+func _on_dialogue_ended(_resource) -> void:
+	game_started = true
 	spawn_squares()
 
 
 func _process(delta: float) -> void:
+	if not game_started:
+		return
+
 	var viewport_size := get_viewport().get_visible_rect().size
 
 	for square in squares_container.get_children():
@@ -125,6 +141,9 @@ func get_random_position(viewport_size: Vector2, margin: int, used_positions: Ar
 
 
 func _on_square_clicked(event: InputEvent, is_target: bool, square: ColorRect) -> void:
+	if not game_started:
+		return
+
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			if is_target:
