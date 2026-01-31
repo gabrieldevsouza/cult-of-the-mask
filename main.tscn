@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://main001"]
 
-[ext_resource type="Script" uid="uid://bnbbhsxehit0c" path="res://main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://bnbbhsxehit0c" path="res://GameDirector.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://c75qw4ebo0neh" path="res://scripts/crowd_spawner.gd" id="2_0xm2m"]
 
 [node name="Main" type="Node2D" unique_id=1542657908]
 script = ExtResource("1_main")
@@ -26,17 +27,19 @@ theme_override_font_sizes/font_size = 24
 text = "Encontre o quadrado vermelho!"
 horizontal_alignment = 1
 
-[node name="ItemsLabel" type="Label" parent="UI"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -40.0
-offset_right = 400.0
-offset_bottom = -10.0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 18
-text = ""
+[node name="TimerLabel" type="Label" parent="UI" unique_id=1717072977]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.097
+anchor_right = 0.5
+anchor_bottom = 0.097
+offset_left = -640.0
+offset_top = -69.840004
+offset_right = 636.0
+offset_bottom = 70.159996
+size_flags_horizontal = 3
+size_flags_vertical = 0
+horizontal_alignment = 1
 
 [node name="Squares" type="Control" parent="." unique_id=945801387]
 layout_mode = 3
@@ -58,3 +61,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[node name="CrowdSpawner" type="Node" parent="." unique_id=1806782616]
+script = ExtResource("2_0xm2m")
+container_path = NodePath("../Squares")
