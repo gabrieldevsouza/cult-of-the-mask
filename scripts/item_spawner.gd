@@ -5,6 +5,12 @@ signal item_collected(item_name: String)
 
 const COLLECTIBLE_SCENE = preload("res://scripts/collectible_item.tscn")
 
+# Persistent items (stay in inventory until expire/reset)
+const PERSISTENT_ITEMS := ["monoculo", "relogio", "visao_fase4", "rosario"]
+# Instant items (immediate effect, can spawn again)
+const INSTANT_ITEMS := ["calice", "lagrima"]
+# All items combined
+const AVAILABLE_ITEMS := ["monoculo", "relogio", "visao_fase4", "calice", "lagrima", "rosario"]
 const AVAILABLE_ITEMS := ["monoculo", "relogio", "visao_fase4"]
 
 @export var container_path: NodePath
@@ -24,13 +30,19 @@ func spawn_items_for_wave(wave: int) -> void:
 
 	clear()
 
-	# Itens que o jogador ainda nao tem
-	var missing_items: Array[String] = []
-	for item in AVAILABLE_ITEMS:
-		if not Inventory.has(item):
-			missing_items.append(item)
+	# Itens disponiveis para spawn
+	var spawnable_items: Array[String] = []
 
-	if missing_items.is_empty():
+	# Persistent items: only spawn if player doesn't have them
+	for item in PERSISTENT_ITEMS:
+		if not Inventory.has(item):
+			spawnable_items.append(item)
+
+	# Instant items: always available to spawn
+	for item in INSTANT_ITEMS:
+		spawnable_items.append(item)
+
+	if spawnable_items.is_empty():
 		return
 
 	# Chance aumenta levemente a cada onda
@@ -40,7 +52,10 @@ func spawn_items_for_wave(wave: int) -> void:
 	var items_spawned := 0
 	var viewport_size := get_viewport().get_visible_rect().size
 
-	for item_name in missing_items:
+	# Shuffle to randomize which items spawn
+	spawnable_items.shuffle()
+
+	for item_name in spawnable_items:
 		if items_spawned >= max_items_per_wave:
 			break
 

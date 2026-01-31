@@ -4,6 +4,8 @@ var items := {
 	"monoculo": false,
 	"relogio": false,
 	"visao_fase4": false,
+	"rosario": false,
+	# Note: calice and lagrima are instant-use items, not stored in inventory
 }
 
 signal item_collected(item_name: String)

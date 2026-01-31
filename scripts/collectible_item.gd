@@ -9,12 +9,18 @@ const ITEM_COLORS := {
 	"monoculo": Color(0.2, 0.4, 0.9),    # Azul
 	"relogio": Color(0.9, 0.7, 0.2),      # Dourado
 	"visao_fase4": Color(0.6, 0.2, 0.8),  # Roxo
+	"calice": Color(0.7, 0.1, 0.1),       # Vermelho sangue
+	"lagrima": Color(0.8, 0.9, 1.0),      # Branco azulado
+	"rosario": Color(0.3, 0.3, 0.3),      # Cinza escuro
 }
 
 const ITEM_LABELS := {
 	"monoculo": "M",
 	"relogio": "R",
 	"visao_fase4": "V",
+	"calice": "♰",
+	"lagrima": "💧",
+	"rosario": "✝",
 }
 
 var color_rect: ColorRect

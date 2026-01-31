@@ -1,0 +1,31 @@
+~ final
+
+# Frases ao matar durante o final (randomizadas no código)
+
+~ kill_1
+Prota: MORRA!
+
+~ kill_2
+Prota: PEREÇA SER INFERIOR!
+
+~ kill_3
+Prota: NÃO CHEGUE PERTO SEU ANIMAL, VOCÊ NÃO MERECE A MINHA LUZ!
+
+# Final 1 - Não conseguiu matar todos (é atacada)
+~ ending_bad
+[center]A multidão avança sobre ela...[/center]
+[center]Sons de sangue e carne ecoam pela praça vazia.[/center]
+[center]...[/center]
+[center]Ela se arrasta para fora da cidade, derrotada.[/center]
+
+# Final 2 - Matou todos
+~ ending_good
+Prota: Acabou. Eu purifiquei a todos.
+Prota: Não há mais nada. Não há mais nada para eles.
+Prota: Não há mais nada para mim.
+Prota: Inexistência é pureza e perfeição.
+Prota: Agora apenas eu serei abençoada. Eu sou o tudo e o todo.
+Prota: ...
+Prota: Onde estão minhas indulgências. Onde estão meus servos divinos?
+Prota: VENHAM A MIM!
+Prota: SE MINHAS LAMÚRIAS ALCANÇAM ALGUÉM, NÃO OUSE ME DEIXAR FALANDO SOZINHA!

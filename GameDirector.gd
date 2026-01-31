@@ -24,6 +24,13 @@ var round_active := false
 @onready var play_again_button: Button = $FadeLayer/GameOverPanel/VBox/PlayAgainButton
 @onready var menu_button: Button = $FadeLayer/GameOverPanel/VBox/MenuButton
 
+# Pause UI
+@onready var pause_panel: Control = $FadeLayer/PausePanel
+@onready var resume_button: Button = $FadeLayer/PausePanel/VBox/ResumeButton
+@onready var pause_menu_button: Button = $FadeLayer/PausePanel/VBox/MenuButton
+
+var is_paused := false
+
 const INTRO_DIALOGUE = preload("res://dialogues/intro.dialogue")
 const BALLOON_SCENE = preload("res://ui/visual_novel_balloon.tscn")
 
@@ -43,6 +50,9 @@ const PRINCIPAL_DIALOGUES := {
 	6: preload("res://dialogues/fase6_principal.dialogue"),
 }
 
+const FINAL_DIALOGUE = preload("res://dialogues/final.dialogue")
+const FINAL_KILL_PHRASES := ["MORRA!", "PEREÇA SER INFERIOR!", "NÃO CHEGUE PERTO SEU ANIMAL, VOCÊ NÃO MERECE A MINHA LUZ!"]
+
 const PHASE_ITEMS := {
 	2: { 3: "monoculo" },
 	3: { 1: "relogio" },
@@ -57,12 +67,18 @@ const NPCS_PER_PHASE := {
 	6: 0,
 }
 
-enum GameState { CUTSCENE, NPC_DIALOGUE, PLAYING, ESCAPE, SINNER_DIALOGUE, GAMEOVER, VICTORY }
+enum GameState { CUTSCENE, NPC_DIALOGUE, PLAYING, ESCAPE, SINNER_DIALOGUE, GAMEOVER, VICTORY, FINAL_PHASE }
 var state: GameState = GameState.CUTSCENE
 
 var current_phase := 2
 var npc_dialogue_index := 0
 var correct_kills := 0
+
+# Final phase variables
+var final_total_enemies := 0
+var final_kills := 0
+const FINAL_TIME := 15.0
+const FINAL_ENEMY_COUNT := 40
 
 var pending_item: String = ""
 var in_dialogue := false
@@ -80,8 +96,16 @@ var item_collected_wave := {
 	"monoculo": -1,
 	"relogio": -1,
 	"visao_fase4": -1,
+	"rosario": -1,
 }
 const ITEM_DURATION := 3  # Item lasts 3 waves including collection wave
+
+# Rosário tracking (kills while rosário is active)
+var rosario_kill_count := 0
+const ROSARIO_KILLS_FOR_LIFE := 5
+
+# Lágrima effect (next wave has no innocents)
+var lagrima_active := false
 
 
 func _ready() -> void:
@@ -103,6 +127,16 @@ func _ready() -> void:
 		play_again_button.pressed.connect(_on_play_again_pressed)
 	if menu_button:
 		menu_button.pressed.connect(_on_menu_button_pressed)
+
+	# Connect pause buttons
+	if resume_button:
+		resume_button.pressed.connect(_on_resume_pressed)
+	if pause_menu_button:
+		pause_menu_button.pressed.connect(_on_pause_menu_pressed)
+
+	# Hide pause panel
+	if pause_panel:
+		pause_panel.hide()
 
 	_update_items_ui()
 
@@ -148,6 +182,10 @@ func _start_infinite_mode() -> void:
 	for key in item_collected_wave.keys():
 		item_collected_wave[key] = -1
 
+	# Reset new item effects
+	rosario_kill_count = 0
+	lagrima_active = false
+
 	# Hide game over panel if visible
 	if game_over_panel:
 		game_over_panel.hide()
@@ -187,10 +225,17 @@ func _start_infinite_wave(wave: int) -> void:
 	# Configure spawner for this wave
 	crowd_spawner.set_infinite_wave(wave)
 
+	# Apply lágrima effect (no distractors this wave)
+	if lagrima_active:
+		crowd_spawner.num_distractors = 0
+		lagrima_active = false
+
 	# Update UI
 	_update_infinite_ui()
 	if inventory_reset:
 		message_label.text = "Onda %d - Inventario resetado!" % wave
+	elif crowd_spawner.num_distractors == 0:
+		message_label.text = "Onda %d - Apenas o pecador!" % wave
 	else:
 		message_label.text = "Onda %d - Encontre o pecador!" % wave
 
@@ -231,6 +276,8 @@ func _reset_inventory() -> void:
 		item_collected_wave[key] = -1
 	crowd_spawner.speed_modifier = 1.0
 	crowd_spawner.distractor_modifier = 1.0
+	rosario_kill_count = 0
+	lagrima_active = false
 	_update_items_ui()
 
 
@@ -262,6 +309,8 @@ func _expire_item(item_name: String) -> void:
 			crowd_spawner.speed_modifier = 1.0
 		"visao_fase4":
 			crowd_spawner.distractor_modifier = 1.0
+		"rosario":
+			rosario_kill_count = 0
 
 
 func _handle_kill_infinite(npc: CrowdNPC) -> void:
@@ -270,6 +319,9 @@ func _handle_kill_infinite(npc: CrowdNPC) -> void:
 	if npc.is_sinner:
 		infinite_kills += 1
 		_update_infinite_ui()
+
+		# Check rosário bonus
+		_check_rosario_bonus()
 
 		round_active = false
 		_set_crowd_clickable(false)
@@ -434,6 +486,17 @@ func _process(delta: float) -> void:
 
 		_update_timer_ui()
 
+	elif state == GameState.FINAL_PHASE:
+		time_left -= delta
+		if time_left <= 0.0:
+			time_left = 0.0
+			_update_timer_ui()
+			_final_timeout()
+			return
+
+		_update_timer_ui()
+		_apply_endgame_pressure()
+
 
 func _begin_escape_phase() -> void:
 	state = GameState.ESCAPE
@@ -475,6 +538,8 @@ func _update_timer_ui() -> void:
 			timer_label.text = "Fuga: %.1f" % escape_left
 		elif state == GameState.NPC_DIALOGUE or state == GameState.PLAYING:
 			timer_label.text = "Tempo: %.1f" % time_left
+		elif state == GameState.FINAL_PHASE:
+			timer_label.text = "SOBREVIVA: %.1f" % time_left
 		else:
 			timer_label.text = ""
 
@@ -518,6 +583,8 @@ func _on_npc_selected(npc: CrowdNPC) -> void:
 				_handle_kill_infinite(npc)
 			else:
 				_handle_kill(npc)
+		GameState.FINAL_PHASE:
+			_handle_final_kill(npc)
 		_:
 			pass
 
@@ -546,7 +613,7 @@ func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	npc_dialogue_index += 1
 
 	current_dialogue_npc = npc
-	npc.set_tint(Color(0.5, 0.1, 0.1))
+	npc.color = Color(0.5, 0.1, 0.1)
 
 	var phase_items = PHASE_ITEMS.get(current_phase, {})
 	if phase_items.has(npc_dialogue_index):
@@ -570,7 +637,7 @@ func _on_npc_dialogue_ended(_resource) -> void:
 	in_dialogue = false
 
 	if current_dialogue_npc and is_instance_valid(current_dialogue_npc):
-		current_dialogue_npc.set_tint(Color.GRAY)
+		current_dialogue_npc.color = Color.GRAY
 	current_dialogue_npc = null
 
 	if pending_item != "":
@@ -591,17 +658,48 @@ func _handle_kill(npc: CrowdNPC) -> void:
 		round_active = false
 		_set_crowd_clickable(false)
 
-		# Som de eliminacao
-		AudioManager.play_kill_sound(false)
-
-		# Flash no sinner
+		# Flash no sinner (som toca depois do dialogo)
 		var tween := create_tween()
 		tween.tween_property(npc, "modulate", Color.WHITE * 2.0, 0.08)
 		tween.tween_callback(_start_sinner_dialogue)
 	else:
-		# Som de matar inocente (dissonancia)
-		AudioManager.play_kill_sound(true)
-		_game_over("Você matou um inocente. Você perdeu.")
+		# Citizen clicked - trigger optional dialogue instead of game over
+		_handle_optional_citizen_dialogue(npc)
+
+
+func _handle_optional_citizen_dialogue(npc: CrowdNPC) -> void:
+	var id := npc.get_instance_id()
+	if talked_npcs.has(id):
+		message_label.text = "Você já falou com essa pessoa."
+		return
+	talked_npcs[id] = true
+
+	# Toca som de selecao de NPC
+	AudioManager.play_npc_select()
+
+	_set_crowd_clickable(false)
+	npc_dialogue_index += 1
+
+	current_dialogue_npc = npc
+	npc.color = Color(0.5, 0.1, 0.1)
+
+	# Check if this NPC gives an item
+	var phase_items = PHASE_ITEMS.get(current_phase, {})
+	if phase_items.has(npc_dialogue_index):
+		pending_item = phase_items[npc_dialogue_index]
+
+	var dialogue_resource = NPC_DIALOGUES.get(current_phase)
+	if dialogue_resource:
+		in_dialogue = true
+		var title := "npc_%d" % npc_dialogue_index
+
+		var balloon = BALLOON_SCENE.instantiate()
+		get_tree().current_scene.add_child(balloon)
+
+		DialogueManager.dialogue_ended.connect(_on_npc_dialogue_ended, CONNECT_ONE_SHOT)
+		balloon.start(dialogue_resource, title)
+	else:
+		_on_npc_dialogue_ended(null)
 
 
 func _start_sinner_dialogue() -> void:
@@ -629,10 +727,154 @@ func _on_sinner_dialogue_ended(_resource) -> void:
 
 
 func _advance_phase() -> void:
+	# Som de execucao (knifesharpener) durante o fade
+	AudioManager.play_kill_sound(false)
+
 	# Som de fase completa
 	AudioManager.play_phase_complete()
 	crowd_spawner.clear()
-	_fade_to_phase(current_phase + 1)
+
+	# After phase 6, trigger the FINAL instead of victory
+	if current_phase >= 6:
+		_start_final_phase()
+	else:
+		_fade_to_phase(current_phase + 1)
+
+
+# ============== FINAL PHASE ==============
+
+func _start_final_phase() -> void:
+	state = GameState.FINAL_PHASE
+	final_kills = 0
+	final_total_enemies = FINAL_ENEMY_COUNT
+
+	# Fade to final
+	_set_crowd_clickable(false)
+	in_dialogue = true
+
+	var tween := create_tween()
+	tween.tween_property(fade_rect, "modulate:a", 1.0, 0.8)
+	tween.tween_callback(_setup_final_phase)
+	tween.tween_property(fade_rect, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(func(): in_dialogue = false)
+
+
+func _setup_final_phase() -> void:
+	# Message: everyone turns against you
+	message_label.text = "Todos se voltam contra você!"
+	score_label.text = "Sobreviva!"
+
+	# Play FINAL.mp3 when the message appears
+	AudioManager.play_final_phase_music()
+
+	# Spawn ALL enemies as "sinners" (red squares)
+	crowd_spawner.clear()
+	await _spawn_final_enemies()
+
+	# Start timer (after enemies are spawned and red)
+	time_left = FINAL_TIME
+	round_active = true
+	_update_timer_ui()
+
+
+func _spawn_final_enemies() -> void:
+	# Temporarily set spawner to spawn many enemies, all as sinners
+	crowd_spawner.num_distractors = FINAL_ENEMY_COUNT - 1
+	crowd_spawner.speed_min = 100.0
+	crowd_spawner.speed_max = 200.0
+
+	await crowd_spawner.spawn_crowd()
+
+	# Make ALL NPCs appear as sinners (red)
+	for npc in crowd_spawner.npcs:
+		if is_instance_valid(npc):
+			npc.is_sinner = true
+			npc.color = Color(0.8, 0.2, 0.2)  # Red color
+
+	_set_crowd_clickable(true)
+
+
+func _handle_final_kill(npc: CrowdNPC) -> void:
+	if not npc.is_sinner:
+		return
+
+	final_kills += 1
+
+	# Show random kill phrase
+	var phrase: String = FINAL_KILL_PHRASES[randi() % FINAL_KILL_PHRASES.size()]
+	message_label.text = phrase
+
+	# Kill sound
+	AudioManager.play_kill_sound(false)
+
+	# Remove the NPC
+	npc.queue_free()
+	crowd_spawner.npcs.erase(npc)
+
+	# Update score
+	score_label.text = "Eliminados: %d/%d" % [final_kills, final_total_enemies]
+
+	# Check if all killed
+	if final_kills >= final_total_enemies:
+		_final_victory()
+
+
+func _final_timeout() -> void:
+	# Player didn't kill everyone in time - BAD ENDING
+	round_active = false
+	state = GameState.GAMEOVER
+	_set_crowd_clickable(false)
+	_freeze_crowd()
+
+	AudioManager.stop_heartbeat()
+	AudioManager.play_gameover_music()
+
+	# Show bad ending dialogue
+	in_dialogue = true
+	var balloon = BALLOON_SCENE.instantiate()
+	get_tree().current_scene.add_child(balloon)
+
+	DialogueManager.dialogue_ended.connect(_on_bad_ending_dialogue_ended, CONNECT_ONE_SHOT)
+	balloon.start(FINAL_DIALOGUE, "ending_bad")
+
+
+func _on_bad_ending_dialogue_ended(_resource) -> void:
+	in_dialogue = false
+	message_label.text = "Você foi derrotada... (Clique para voltar ao menu)"
+	# Return to menu on click
+
+
+func _final_victory() -> void:
+	# Player killed everyone - "GOOD" ENDING (dark ending)
+	round_active = false
+	state = GameState.VICTORY
+	_set_crowd_clickable(false)
+
+	AudioManager.stop_heartbeat()
+	AudioManager.play_victory_music()
+
+	# Darken screen slightly
+	fade_rect.modulate.a = 0.3
+
+	# Show victory dialogue
+	in_dialogue = true
+	var balloon = BALLOON_SCENE.instantiate()
+	get_tree().current_scene.add_child(balloon)
+
+	DialogueManager.dialogue_ended.connect(_on_good_ending_dialogue_ended, CONNECT_ONE_SHOT)
+	balloon.start(FINAL_DIALOGUE, "ending_good")
+
+
+func _on_good_ending_dialogue_ended(_resource) -> void:
+	in_dialogue = false
+	fade_rect.modulate.a = 0.5
+	message_label.text = "..."
+	score_label.text = ""
+	timer_label.text = ""
+	# Return to menu on click
+
+
+# ============== END FINAL PHASE ==============
 
 
 func _escape() -> void:
@@ -659,13 +901,11 @@ func _freeze_crowd() -> void:
 
 func _on_item_collected(item_name: String) -> void:
 	# Track when item was collected (for infinite mode duration)
-	if GameMode.is_infinite():
+	if GameMode.is_infinite() and item_name in item_collected_wave:
 		item_collected_wave[item_name] = infinite_wave
 
-	_update_items_ui()
-
 	# Som de coleta de item (especial para itens importantes)
-	var is_special := item_name in ["monoculo", "relogio", "visao_fase4"]
+	var is_special := item_name in ["monoculo", "relogio", "visao_fase4", "calice", "lagrima", "rosario"]
 	AudioManager.play_item_collect(is_special)
 
 	var duration_msg := " (dura 3 ondas)" if GameMode.is_infinite() else ""
@@ -680,6 +920,67 @@ func _on_item_collected(item_name: String) -> void:
 		"visao_fase4":
 			message_label.text = "Visão obtida! Menos distratores." + duration_msg
 			crowd_spawner.apply_visao_effect()
+		"calice":
+			_apply_calice_effect()
+		"lagrima":
+			_apply_lagrima_effect()
+		"rosario":
+			message_label.text = "Rosário Corrompido! A cada 5 kills, ganhe 1 vida." + duration_msg
+			rosario_kill_count = 0
+
+	_update_items_ui()
+
+
+func _apply_calice_effect() -> void:
+	# Cálice de Sangue: restore 1 life (instant effect)
+	if infinite_lives < INFINITE_MAX_LIVES:
+		infinite_lives += 1
+		_update_infinite_ui()
+		message_label.text = "Cálice de Sangue! +1 vida restaurada!"
+		_flash_screen_green()
+	else:
+		message_label.text = "Cálice de Sangue! (vidas já estão cheias)"
+
+
+func _apply_lagrima_effect() -> void:
+	# Lágrima da Sacerdotisa: next wave has no innocents
+	lagrima_active = true
+	message_label.text = "Lágrima da Sacerdotisa! Próxima onda sem inocentes!"
+	_flash_screen_blue()
+
+
+func _flash_screen_green() -> void:
+	var original_color := fade_rect.color
+	fade_rect.color = Color(0.0, 0.6, 0.2, 1.0)
+	fade_rect.modulate.a = 0.4
+
+	var tween := create_tween()
+	tween.tween_property(fade_rect, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(func(): fade_rect.color = original_color)
+
+
+func _flash_screen_blue() -> void:
+	var original_color := fade_rect.color
+	fade_rect.color = Color(0.2, 0.4, 0.8, 1.0)
+	fade_rect.modulate.a = 0.4
+
+	var tween := create_tween()
+	tween.tween_property(fade_rect, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(func(): fade_rect.color = original_color)
+
+
+func _check_rosario_bonus() -> void:
+	if not Inventory.has("rosario"):
+		return
+
+	rosario_kill_count += 1
+	if rosario_kill_count >= ROSARIO_KILLS_FOR_LIFE:
+		rosario_kill_count = 0
+		if infinite_lives < INFINITE_MAX_LIVES:
+			infinite_lives += 1
+			_update_infinite_ui()
+			message_label.text = "Rosário! +1 vida pelo 5º kill!"
+			_flash_screen_green()
 
 
 func _update_items_ui() -> void:
@@ -708,6 +1009,17 @@ func _update_items_ui() -> void:
 			items_text += "👁️ Visão (%d)\n" % remaining
 		else:
 			items_text += "👁️ Visão\n"
+
+	if Inventory.has("rosario"):
+		var remaining := _get_item_remaining_waves("rosario")
+		var kills_left := ROSARIO_KILLS_FOR_LIFE - rosario_kill_count
+		if remaining > 0:
+			items_text += "✝️ Rosário (%d) [%d kills]\n" % [remaining, kills_left]
+		else:
+			items_text += "✝️ Rosário [%d kills]\n" % kills_left
+
+	if lagrima_active:
+		items_text += "💧 Lágrima (próx. onda)\n"
 
 	items_label.text = items_text
 
@@ -751,8 +1063,53 @@ func _game_over(reason: String) -> void:
 	AudioManager.play_gameover_music()
 
 
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_toggle_pause()
+
+
+func _toggle_pause() -> void:
+	# Don't pause during cutscenes, dialogues, game over, or victory
+	if state == GameState.CUTSCENE or state == GameState.GAMEOVER or state == GameState.VICTORY:
+		return
+	if in_dialogue:
+		return
+
+	if is_paused:
+		_resume_game()
+	else:
+		_pause_game()
+
+
+func _pause_game() -> void:
+	is_paused = true
+	get_tree().paused = true
+	pause_panel.show()
+	AudioManager.play_ui_click()
+
+
+func _resume_game() -> void:
+	is_paused = false
+	get_tree().paused = false
+	pause_panel.hide()
+	AudioManager.play_ui_click()
+
+
+func _on_resume_pressed() -> void:
+	_resume_game()
+
+
+func _on_pause_menu_pressed() -> void:
+	_resume_game()
+	_return_to_menu()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if state != GameState.GAMEOVER and state != GameState.VICTORY:
+		return
+
+	# Don't process clicks during dialogue
+	if in_dialogue:
 		return
 
 	# In infinite mode, use buttons instead of click anywhere
@@ -760,7 +1117,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton and event.pressed:
-		_restart_game()
+		# After final phase (phase 6 completed), return to menu
+		if current_phase >= 6:
+			_return_to_menu()
+		else:
+			_restart_game()
 
 
 func _return_to_menu() -> void:
