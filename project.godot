@@ -21,6 +21,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 DialogueManager="*uid://c3rodes2l3gxb"
+Inventory="*res://inventory.gd"
 
 [display]
 

@@ -1,0 +1,30 @@
+~ npc_1
+
+Procuro alguem na multidao para conversar. Uma senhora para e diz:
+Senhora: Gloria a Altiza que pode trazer a ti para nos proteger. Esses incredulos marcados em seu rosto sao muito perigosos e nao merecem nosso respeito.
+=> END
+
+~ npc_2
+
+Uma crianca esbarra em mim em meio a multidao.
+Crianca: Suplico seu perdao. Espero ainda ser salvo por voce. Peco mil desculpas!
+=> END
+
+~ npc_3
+
+Uma moca surpreendentemente mais alta que eu chama minha atencao.
+Moca Alta: Acho que voce consegue encontrar eles pela multidao ou atras da casa a esquerda. Eu nao gosto dessa ideia de matar ninguem, mas quero que isso acabe logo e sendo sincera, esses animais nao sao importantes para mim.
+Ela me estende um monoculo brilhoso.
+=> END
+
+~ npc_4
+
+Um senhor sem a perna esquerda ajoelha a minha frente, segura com furor em minha bainha e suja o leve tecido de minhas roupas com suas lagrimas desesperadas de alegria.
+Meu sentimento de poder cresce. Esses rasos cidadaos precisam de mim.
+=> END
+
+~ npc_5
+
+Qualquer um que falo me cumprimenta com alegria e me inicia a me bajular.
+Nunca me senti tao viva.
+=> END

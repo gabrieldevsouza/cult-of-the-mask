@@ -1,9 +1,11 @@
 extends CanvasLayer
-
-const FADE_DURATION := 0.3
+## Balloon simplificado para dialogos de NPC - sem personagens visuais
+## O jogo continua rodando no fundo
 
 @export var next_action: StringName = &"ui_accept"
 @export var skip_action: StringName = &"ui_cancel"
+
+signal dialogue_finished
 
 var resource: DialogueResource
 var temporary_game_states: Array = []
@@ -19,6 +21,7 @@ var dialogue_line: DialogueLine:
 			dialogue_line = value
 			apply_dialogue_line()
 		else:
+			dialogue_finished.emit()
 			queue_free()
 	get:
 		return dialogue_line
@@ -29,23 +32,6 @@ var mutation_cooldown: Timer = Timer.new()
 @onready var character_label: RichTextLabel = %CharacterLabel
 @onready var dialogue_label: DialogueLabel = %DialogueLabel
 @onready var responses_menu: DialogueResponsesMenu = %ResponsesMenu
-@onready var left_character: ColorRect = %LeftCharacter
-@onready var right_character: ColorRect = %RightCharacter
-
-# Mapeamento de personagens para lados
-var character_sides: Dictionary = {
-	"Alice": "left",
-	"Bob": "right",
-	"Protagonista": "left",
-	"Mascarado": "right"
-}
-
-var character_colors: Dictionary = {
-	"Alice": Color(0.6, 0.3, 0.7, 1),
-	"Bob": Color(0.3, 0.6, 0.7, 1),
-	"Protagonista": Color(0.8, 0.7, 0.5, 1),  # Dourado
-	"Mascarado": Color(0.5, 0.2, 0.2, 1)  # Vermelho escuro
-}
 
 
 func _ready() -> void:
@@ -63,15 +49,6 @@ func _unhandled_input(_event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_TRANSLATION_CHANGED and _locale != TranslationServer.get_locale() and is_instance_valid(dialogue_label):
-		_locale = TranslationServer.get_locale()
-		var visible_ratio = dialogue_label.visible_ratio
-		self.dialogue_line = await resource.get_next_dialogue_line(dialogue_line.id)
-		if visible_ratio < 1:
-			dialogue_label.skip_typing()
-
-
 func start(dialogue_resource: DialogueResource, title: String, extra_game_states: Array = []) -> void:
 	temporary_game_states = [self] + extra_game_states
 	is_waiting_for_input = false
@@ -86,12 +63,12 @@ func apply_dialogue_line() -> void:
 	balloon.focus_mode = Control.FOCUS_ALL
 	balloon.grab_focus()
 
-	# Atualiza o nome do personagem
-	character_label.visible = not dialogue_line.character.is_empty()
-	character_label.text = tr(dialogue_line.character, "dialogue")
-
-	# Atualiza os sprites dos personagens
-	update_character_display(dialogue_line.character)
+	# Mostra o nome do personagem apenas se houver um
+	if not dialogue_line.character.is_empty():
+		character_label.visible = true
+		character_label.text = dialogue_line.character
+	else:
+		character_label.visible = false
 
 	dialogue_label.hide()
 	dialogue_label.dialogue_line = dialogue_line
@@ -118,51 +95,6 @@ func apply_dialogue_line() -> void:
 		is_waiting_for_input = true
 		balloon.focus_mode = Control.FOCUS_ALL
 		balloon.grab_focus()
-
-
-func update_character_display(character_name: String) -> void:
-	var side = character_sides.get(character_name, "")
-
-	# Escurece personagens inativos, destaca o ativo
-	var inactive_color := Color(0.5, 0.5, 0.5, 1)
-
-	if side == "left":
-		show_character(left_character, character_name, true)
-		if right_character.visible:
-			dim_character(right_character)
-	elif side == "right":
-		show_character(right_character, character_name, true)
-		if left_character.visible:
-			dim_character(left_character)
-
-	# Atualiza a cor do nome baseado no personagem
-	if character_colors.has(character_name):
-		character_label.add_theme_color_override("default_color", character_colors[character_name])
-
-
-func show_character(character_node: ColorRect, character_name: String, is_active: bool) -> void:
-	if not character_node.visible:
-		character_node.modulate.a = 0
-		character_node.show()
-		var tween := create_tween()
-		tween.tween_property(character_node, "modulate:a", 1.0, FADE_DURATION)
-
-	if is_active:
-		highlight_character(character_node)
-
-	# Atualiza a cor do placeholder
-	if character_colors.has(character_name):
-		character_node.color = character_colors[character_name]
-
-
-func highlight_character(character_node: ColorRect) -> void:
-	var tween := create_tween()
-	tween.tween_property(character_node, "modulate", Color.WHITE, 0.2)
-
-
-func dim_character(character_node: ColorRect) -> void:
-	var tween := create_tween()
-	tween.tween_property(character_node, "modulate", Color(0.6, 0.6, 0.6, 1), 0.2)
 
 
 func next(next_id: String) -> void:

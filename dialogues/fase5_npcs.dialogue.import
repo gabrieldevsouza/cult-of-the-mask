@@ -1,0 +1,15 @@
+[remap]
+
+importer="dialogue_manager_compiler_14"
+type="Resource"
+uid="uid://bjx2h0gol2xfl"
+path="res://.godot/imported/fase5_npcs.dialogue-fce493c17fa97cd6bf23516c85a0bab4.tres"
+
+[deps]
+
+source_file="res://dialogues/fase5_npcs.dialogue"
+dest_files=["res://.godot/imported/fase5_npcs.dialogue-fce493c17fa97cd6bf23516c85a0bab4.tres"]
+
+[params]
+
+defaults=true
