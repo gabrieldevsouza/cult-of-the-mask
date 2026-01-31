@@ -1,0 +1,18 @@
+~ start
+
+Alice: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Bob: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Alice: Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+Bob: Pronto para encontrar o quadrado vermelho?
+- Sim, vamos! => ready
+- Ainda nao... => not_ready
+
+~ ready
+Alice: Otimo! Boa sorte!
+Bob: Voce consegue!
+=> END
+
+~ not_ready
+Bob: Tudo bem, sem pressa.
+Alice: Quando estiver pronto, clique em qualquer lugar.
+=> ready

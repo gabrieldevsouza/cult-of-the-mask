@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(move \"find-the-square\\\\project.godot\" .)",
+      "Bash(move \"find-the-square\\\\main.gd\" .)",
+      "Bash(move \"find-the-square\\\\main.gd.uid\" .)",
+      "Bash(move \"find-the-square\\\\main.tscn\" .)",
+      "Bash(move \"find-the-square\\\\dialogues\" .)"
+    ]
+  }
+}
