@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dp3445sw6wj86"
+path="res://.godot/imported/IGREJA - FASE 1.ogg-791e8633c6c5645c03853761380e8507.oggvorbisstr"
+
+[deps]
+
+source_file="res://audio/IGREJA - FASE 1.ogg"
+dest_files=["res://.godot/imported/IGREJA - FASE 1.ogg-791e8633c6c5645c03853761380e8507.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,8 @@
+# Audio assets folder for Cult of the Mask
+# Place your audio files in the appropriate subfolders:
+#
+# bgm/     - Background music tracks
+# sfx/     - Sound effects
+# ambient/ - Ambient/environmental sounds
+#
+# Supported formats: .ogg (recommended), .wav, .mp3

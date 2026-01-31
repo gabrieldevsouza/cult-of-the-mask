@@ -1,0 +1,26 @@
+# Sound Effects files
+# Expected files:
+#
+# UI:
+# - ui_click.ogg     (Click suave para botoes)
+# - ui_hover.ogg     (Hover em elementos)
+# - ui_back.ogg      (Voltar/Cancelar)
+#
+# Gameplay:
+# - npc_select.ogg   (Selecionar NPC)
+# - kill_visceral.ogg (Eliminar alvo - som molhado/visceral)
+# - kill_innocent.ogg (Matar inocente - dissonancia)
+# - item_collect.ogg  (Coletar item normal)
+# - item_special.ogg  (Itens especiais - metalico)
+#
+# Feedback:
+# - timer_tick.ogg    (Tick-tock do timer)
+# - timer_warning.ogg (Aviso de tempo baixo)
+# - heartbeat.ogg     (Batida cardiaca - pressao)
+# - phase_complete.ogg (Sino grave - fase completa)
+#
+# Psicologicos (fases tardias):
+# - whisper.ogg       (Sussurros incompreensiveis)
+# - cry_distant.ogg   (Choro distante)
+# - laugh_muffled.ogg (Risadas abafadas)
+# - footstep_echo.ogg (Eco de passos)
