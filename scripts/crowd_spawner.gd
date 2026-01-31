@@ -14,6 +14,38 @@ signal npc_selected(npc: CrowdNPC)
 @onready var container: Control = get_node_or_null(container_path)
 
 var npcs: Array[CrowdNPC] = []
+var current_phase := 2
+
+# Configurações por fase
+const PHASE_CONFIG := {
+	2: { "distractors": 30, "speed_min": 80.0, "speed_max": 180.0 },
+	3: { "distractors": 22, "speed_min": 60.0, "speed_max": 140.0 },
+	4: { "distractors": 15, "speed_min": 50.0, "speed_max": 120.0 },
+	5: { "distractors": 8, "speed_min": 40.0, "speed_max": 100.0 },
+	6: { "distractors": 0, "speed_min": 0.0, "speed_max": 0.0 },
+}
+
+# Modificadores de efeitos de itens
+var speed_modifier := 1.0  # Relógio reduz para 0.7
+var distractor_modifier := 1.0  # Visão reduz para 0.5
+
+func set_phase(phase: int) -> void:
+	current_phase = phase
+	if PHASE_CONFIG.has(phase):
+		var config = PHASE_CONFIG[phase]
+		num_distractors = int(config["distractors"] * distractor_modifier)
+		speed_min = config["speed_min"] * speed_modifier
+		speed_max = config["speed_max"] * speed_modifier
+
+func apply_relogio_effect() -> void:
+	speed_modifier = 0.7
+	# Aplica aos NPCs existentes
+	for npc in npcs:
+		if is_instance_valid(npc):
+			npc.velocity *= 0.7
+
+func apply_visao_effect() -> void:
+	distractor_modifier = 0.5
 
 func clear() -> void:
 	for npc in npcs:
@@ -61,6 +93,11 @@ func get_sinner() -> CrowdNPC:
 		if npc.is_sinner:
 			return npc
 	return null
+
+func apply_monoculo_to_sinner() -> void:
+	var sinner = get_sinner()
+	if sinner:
+		sinner.apply_monoculo_effect()
 
 func _on_npc_selected(npc: CrowdNPC) -> void:
 	npc_selected.emit(npc)

@@ -165,5 +165,20 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Response example"
 
+[node name="SkipButton" type="Button" parent="Balloon"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 50.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 16
+text = "Pular >>"
+
 [connection signal="gui_input" from="Balloon" to="." method="_on_balloon_gui_input"]
 [connection signal="response_selected" from="Balloon/Responses/ResponsesMenu" to="." method="_on_responses_menu_response_selected"]
+[connection signal="pressed" from="Balloon/SkipButton" to="." method="_on_skip_button_pressed"]

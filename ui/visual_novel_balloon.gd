@@ -206,4 +206,10 @@ func _on_balloon_gui_input(event: InputEvent) -> void:
 func _on_responses_menu_response_selected(response: DialogueResponse) -> void:
 	next(response.next_id)
 
+
+func _on_skip_button_pressed() -> void:
+	# Pula todo o diálogo - emite o sinal e destrói o balloon
+	DialogueManager.dialogue_ended.emit(resource)
+	queue_free()
+
 #endregion
