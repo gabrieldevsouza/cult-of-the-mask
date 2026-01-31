@@ -546,7 +546,7 @@ func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	npc_dialogue_index += 1
 
 	current_dialogue_npc = npc
-	npc.color = Color(0.5, 0.1, 0.1)
+	npc.set_tint(Color(0.5, 0.1, 0.1))
 
 	var phase_items = PHASE_ITEMS.get(current_phase, {})
 	if phase_items.has(npc_dialogue_index):
@@ -570,7 +570,7 @@ func _on_npc_dialogue_ended(_resource) -> void:
 	in_dialogue = false
 
 	if current_dialogue_npc and is_instance_valid(current_dialogue_npc):
-		current_dialogue_npc.color = Color.GRAY
+		current_dialogue_npc.set_tint(Color.GRAY)
 	current_dialogue_npc = null
 
 	if pending_item != "":

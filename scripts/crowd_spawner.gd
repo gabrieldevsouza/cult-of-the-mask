@@ -4,12 +4,13 @@ class_name CrowdSpawner
 signal npc_selected(npc: CrowdNPC)
 signal sinner_escaped()
 
-@export var square_size := 50.0
+@export var square_size := 64.0
 @export var num_distractors := 30
 @export var speed_min := 50.0
 @export var speed_max := 150.0
 @export var ui_top_margin := 120.0
 @export var debug_show_sinner := true
+@export var debug_tint_sinner := false
 
 @export var container_path: NodePath
 @onready var container: Control = get_node_or_null(container_path)
@@ -114,7 +115,7 @@ func spawn_crowd() -> void:
 		if is_sinner:
 			vel *= 1.15
 
-		npc.setup(is_sinner, debug_show_sinner, vel, square_size, ui_top_margin)
+		npc.setup(is_sinner, debug_show_sinner, debug_tint_sinner, vel, square_size, ui_top_margin)
 		npc.selected.connect(_on_npc_selected)
 		npc.escaped.connect(_on_npc_escaped)
 

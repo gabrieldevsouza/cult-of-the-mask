@@ -1,8 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://main001"]
+[gd_scene format=3 uid="uid://main001"]
 
 [ext_resource type="Script" uid="uid://bnbbhsxehit0c" path="res://GameDirector.gd" id="1_main"]
 [ext_resource type="Script" uid="uid://c75qw4ebo0neh" path="res://scripts/crowd_spawner.gd" id="2_0xm2m"]
-[ext_resource type="Script" path="res://scripts/item_spawner.gd" id="3_itemspawn"]
+[ext_resource type="Script" uid="uid://uj4d17m8gexc" path="res://scripts/item_spawner.gd" id="3_itemspawn"]
 
 [node name="Main" type="Node2D" unique_id=1542657908]
 script = ExtResource("1_main")
@@ -74,15 +74,16 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="GameOverPanel" type="Control" parent="FadeLayer"]
+[node name="GameOverPanel" type="Control" parent="FadeLayer" unique_id=278698106]
 visible = false
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="FadeLayer/GameOverPanel"]
+[node name="Background" type="ColorRect" parent="FadeLayer/GameOverPanel" unique_id=1733889788]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -91,7 +92,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.05, 0.02, 0.08, 1)
 
-[node name="VBox" type="VBoxContainer" parent="FadeLayer/GameOverPanel"]
+[node name="VBox" type="VBoxContainer" parent="FadeLayer/GameOverPanel" unique_id=314835677]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -106,37 +107,37 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
 
-[node name="Title" type="Label" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="Title" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=1139690927]
 layout_mode = 2
-theme_override_font_sizes/font_size = 52
 theme_override_colors/font_color = Color(0.9, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 52
 text = "GAME OVER"
 horizontal_alignment = 1
 
-[node name="WaveLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="WaveLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=2058318420]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Onda alcancada: 0"
 horizontal_alignment = 1
 
-[node name="KillsLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="KillsLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=135040071]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Pecadores eliminados: 0"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="Spacer" type="Control" parent="FadeLayer/GameOverPanel/VBox" unique_id=228930053]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
-[node name="PlayAgainButton" type="Button" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="PlayAgainButton" type="Button" parent="FadeLayer/GameOverPanel/VBox" unique_id=361617197]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 22
 text = "Jogar Novamente"
 
-[node name="MenuButton" type="Button" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="MenuButton" type="Button" parent="FadeLayer/GameOverPanel/VBox" unique_id=1977312167]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -147,6 +148,6 @@ text = "Voltar ao Menu"
 script = ExtResource("2_0xm2m")
 container_path = NodePath("../Squares")
 
-[node name="ItemSpawner" type="Node" parent="."]
+[node name="ItemSpawner" type="Node" parent="." unique_id=96935089]
 script = ExtResource("3_itemspawn")
 container_path = NodePath("../Squares")
