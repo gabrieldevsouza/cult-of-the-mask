@@ -1,0 +1,15 @@
+[remap]
+
+importer="dialogue_manager_compiler_14"
+type="Resource"
+uid="uid://cfxi7mlt1jybs"
+path="res://.godot/imported/fase6_principal.dialogue-a315aa7d04e08c7c7fba0172db34497e.tres"
+
+[deps]
+
+source_file="res://dialogues/fase6_principal.dialogue"
+dest_files=["res://.godot/imported/fase6_principal.dialogue-a315aa7d04e08c7c7fba0172db34497e.tres"]
+
+[params]
+
+defaults=true

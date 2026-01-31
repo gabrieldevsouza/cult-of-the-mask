@@ -98,7 +98,7 @@ var sfx_files := {
 	SFXType.UI_BACK: "ui_back.ogg",
 
 	SFXType.NPC_SELECT: "npc_select.ogg",
-	SFXType.KILL_VISCERAL: "res://audio/knifesharpener2.ogg",
+	SFXType.KILL_VISCERAL: "kill_visceral.ogg",
 	SFXType.KILL_INNOCENT: "kill_innocent.ogg",
 	SFXType.ITEM_COLLECT: "item_collect.ogg",
 	SFXType.ITEM_SPECIAL: "item_special.ogg",
@@ -286,16 +286,18 @@ func play_sfx(sfx_type: SFXType, volume_modifier := 1.0) -> void:
 	if file_name.is_empty():
 		return
 
-	# Check if it's an absolute path or relative
-	var full_path: String
-	if file_name.begins_with("res://"):
-		full_path = file_name
-	else:
-		full_path = SFX_PATH + file_name
+	var full_path := SFX_PATH + file_name
 
 	if not ResourceLoader.exists(full_path):
-		push_warning("AudioManager: SFX nao encontrado: " + full_path)
-		return
+		# Tenta usar foom_0.wav como fallback para kill
+		if sfx_type == SFXType.KILL_VISCERAL:
+			full_path = "res://sounds/foom_0.wav"
+			if not ResourceLoader.exists(full_path):
+				push_warning("AudioManager: SFX nao encontrado: " + SFX_PATH + file_name)
+				return
+		else:
+			push_warning("AudioManager: SFX nao encontrado: " + full_path)
+			return
 
 	var stream := _load_sfx_from_path(full_path)
 	if stream == null:
@@ -388,38 +390,22 @@ func play_intro_music() -> void:
 func play_phase_music(phase: int) -> void:
 	current_phase = phase
 
-	if phase < 2 or phase > 6:
-		stop_bgm()
-		_whisper_timer.stop()
-		return
-
-	# Volume progressivo: fase 2 = 30%, fase 6 = 100%
-	var phase_volume_mult := 0.3 + (phase - 2) * 0.175
-
-	# Todas as fases usam a mesma musica com volume crescente
-	play_bgm(BGMType.PHASE_EARLY)
-	_set_bgm_volume_multiplier(phase_volume_mult)
-
-	# Inicia sussurros aleatorios nas fases tardias
-	if phase >= 5:
-		_whisper_timer.start()
-	else:
-		_whisper_timer.stop()
-
-
-func _set_bgm_volume_multiplier(multiplier: float) -> void:
-	if bgm_player and bgm_player.playing:
-		var target_volume := bgm_volume * master_volume * multiplier
-		bgm_player.volume_db = linear_to_db(target_volume)
+	match phase:
+		2, 3:
+			play_bgm(BGMType.PHASE_EARLY)
+		4:
+			play_bgm(BGMType.PHASE_MID)
+		5, 6:
+			play_bgm(BGMType.PHASE_LATE)
+			# Inicia sussurros aleatorios nas fases tardias
+			_whisper_timer.start()
+		_:
+			stop_bgm()
+			_whisper_timer.stop()
 
 
 func play_sinner_music() -> void:
 	play_bgm(BGMType.SINNER_DIALOGUE)
-
-
-func play_final_phase_music() -> void:
-	_whisper_timer.stop()
-	play_bgm(BGMType.VICTORY)  # Usa FINAL.mp3
 
 
 func play_victory_music() -> void:

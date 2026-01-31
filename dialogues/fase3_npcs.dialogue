@@ -1,0 +1,33 @@
+~ npc_1
+
+Um homem magro e singelo se aproxima para me cortejar.
+Homem: Que honra poder aproximar-se de alguem tao magnanime. A senhora esta machucada? Sinto cheiro de sangue e morte em suas maos...
+Ele se afasta calmamente. Sem querer deixa cair um relogio de seu bolso.
+=> END
+
+~ npc_2
+
+A mesma crianca no centro da praca me chama para jogar com ela.
+Minhas falanges ensanguentadas sujam o seu brinquedo.
+Peco desculpas e me afasto, mesmo com sua reacao carente.
+=> END
+
+~ npc_3
+
+Uma jovem, sem vida, sem objetivos, sem futuro, toca em meus ombros.
+Jovem: Voce fez a coisa certa, mesmo que assustadora. Nos ainda te amamos.
+Obvio que eles ainda me amam. Como eles poderiam nao me amar. Vou salva-los.
+=> END
+
+~ npc_4
+
+Uma mulher com um bebe em seu colo se aproxima. O bebe chora.
+A mulher pede perdao. Diz que vai puni-lo por essa acao infame.
+Queria eu puni-lo.
+=> END
+
+~ npc_5
+
+As pessoas se aproximam de mim, mantendo-se a uma distancia segura.
+Preciso me limpar o quanto antes.
+=> END

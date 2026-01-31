@@ -8,16 +8,28 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Cult of the Mask"
+run/main_scene="res://ui/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="res://icon.svg"
 
-[physics]
+[autoload]
 
-3d/physics_engine="Jolt Physics"
+DialogueManager="*uid://c3rodes2l3gxb"
+Inventory="*res://inventory.gd"
+AudioManager="*res://audio_manager.gd"
+GameMode="*res://game_mode.gd"
 
-[rendering]
+[display]
 
-rendering_device/driver.windows="d3d12"
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg")

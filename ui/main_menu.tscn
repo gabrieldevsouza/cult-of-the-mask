@@ -115,10 +115,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -380.0
-offset_top = -200.0
-offset_right = 380.0
-offset_bottom = 320.0
+offset_left = -320.0
+offset_top = -170.0
+offset_right = 320.0
+offset_bottom = 270.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -144,50 +144,21 @@ horizontal_alignment = 1
 
 [node name="Content" type="Label" parent="CreditsPanel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Desenvolvedores:
-Arthur Poggy e Gabriel de Souza
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+text = "Desenvolvido por:
+[Seu Nome]
 
 Arte e Design:
-Theodora D. e Anandra Bispo"
+[Placeholder]
+
+Musica e Som:
+[Placeholder]
+
+Agradecimentos Especiais:
+[Placeholder]"
 horizontal_alignment = 1
-
-[node name="MusicTitle" type="Label" parent="CreditsPanel/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Musicas e Sons:"
-horizontal_alignment = 1
-
-[node name="MusicColumns" type="HBoxContainer" parent="CreditsPanel/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 40
-
-[node name="Column1" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 14
-text = "Dark Theme
-JaggedStone (CC0)
-opengameart.org/content/dark-theme
-
-Dark Shrine Loop
-qubodup (CC0)
-opengameart.org/content/dark-shrine-loop"
-horizontal_alignment = 1
-
-[node name="Column2" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 14
-text = "Dragged Through Hellfire
-Zander Noriega (CC-BY 3.0)
-opengameart.org/content/dragged-through-hellfire
-
-Dark Ambience Loop
-Iwan Gabovitch (CC-BY 3.0)
-opengameart.org/content/dark-ambience-loop"
-horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BackButton" type="Button" parent="CreditsPanel/VBox"]
 custom_minimum_size = Vector2(180, 45)
@@ -239,7 +210,7 @@ text = "Mouse:
 Clique Esquerdo - Selecionar/Interagir
 
 Teclado:
-ESC - Pausar
+ESC - Pausar (em breve)
 SPACE/ENTER - Avancar dialogo"
 horizontal_alignment = 1
 vertical_alignment = 1

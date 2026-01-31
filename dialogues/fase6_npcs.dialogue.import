@@ -1,0 +1,15 @@
+[remap]
+
+importer="dialogue_manager_compiler_14"
+type="Resource"
+uid="uid://cp4lqkyi2xmao"
+path="res://.godot/imported/fase6_npcs.dialogue-add7950f89e77ed0c42ccbc22b6a4031.tres"
+
+[deps]
+
+source_file="res://dialogues/fase6_npcs.dialogue"
+dest_files=["res://.godot/imported/fase6_npcs.dialogue-add7950f89e77ed0c42ccbc22b6a4031.tres"]
+
+[params]
+
+defaults=true

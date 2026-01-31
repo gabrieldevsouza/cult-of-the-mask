@@ -1,0 +1,15 @@
+[remap]
+
+importer="dialogue_manager_compiler_14"
+type="Resource"
+uid="uid://b1hjhvjf8esl0"
+path="res://.godot/imported/fase5_principal.dialogue-1b8d2d1a9c1f4e10e38c4d6bd8913084.tres"
+
+[deps]
+
+source_file="res://dialogues/fase5_principal.dialogue"
+dest_files=["res://.godot/imported/fase5_principal.dialogue-1b8d2d1a9c1f4e10e38c4d6bd8913084.tres"]
+
+[params]
+
+defaults=true

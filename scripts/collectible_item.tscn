@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bf03xm60p5m3y"]
+
+[ext_resource type="Script" path="res://scripts/collectible_item.gd" id="1_script"]
+
+[node name="CollectibleItem" type="Control"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 0
+script = ExtResource("1_script")
