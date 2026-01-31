@@ -2,6 +2,7 @@ extends Node
 class_name CrowdSpawner
 
 signal npc_selected(npc: CrowdNPC)
+signal sinner_escaped()
 
 @export var square_size := 50.0
 @export var num_distractors := 30
@@ -16,7 +17,6 @@ signal npc_selected(npc: CrowdNPC)
 var npcs: Array[CrowdNPC] = []
 var current_phase := 2
 
-# Configurações por fase
 const PHASE_CONFIG := {
 	2: { "distractors": 30, "speed_min": 80.0, "speed_max": 180.0 },
 	3: { "distractors": 22, "speed_min": 60.0, "speed_max": 140.0 },
@@ -25,9 +25,8 @@ const PHASE_CONFIG := {
 	6: { "distractors": 0,  "speed_min": 0.0,  "speed_max": 0.0 },
 }
 
-# Modificadores de efeitos de itens
-var speed_modifier := 1.0          # Relógio reduz para 0.7
-var distractor_modifier := 1.0     # Visão reduz para 0.5
+var speed_modifier := 1.0
+var distractor_modifier := 1.0
 
 func set_phase(phase: int) -> void:
 	current_phase = phase
@@ -39,14 +38,12 @@ func set_phase(phase: int) -> void:
 
 func apply_relogio_effect() -> void:
 	speed_modifier = 0.7
-	# Apply to existing NPCs too
 	for npc in npcs:
 		if is_instance_valid(npc):
-			npc.velocity *= 0.7
+			npc.set_speed_magnitude(npc.velocity.length() * 0.7)
 
 func apply_visao_effect() -> void:
 	distractor_modifier = 0.5
-	# Note: effect applies on next set_phase/spawn. (Jam-safe)
 
 func clear() -> void:
 	for npc in npcs:
@@ -83,12 +80,13 @@ func spawn_crowd() -> void:
 			vel *= 1.15
 
 		npc.setup(is_sinner, debug_show_sinner, vel, square_size, ui_top_margin)
+
 		npc.selected.connect(_on_npc_selected)
+		npc.escaped.connect(_on_npc_escaped)
 
 		container.add_child(npc)
 		npcs.append(npc)
 
-		# Disabled by default, enabled by GameDirector
 		npc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func get_sinner() -> CrowdNPC:
@@ -102,8 +100,50 @@ func apply_monoculo_to_sinner() -> void:
 	if sinner and is_instance_valid(sinner):
 		sinner.apply_monoculo_effect()
 
+func begin_escape_phase(uniform_speed: float) -> void:
+	# Everyone moves at the same speed magnitude.
+	for npc in npcs:
+		if not is_instance_valid(npc):
+			continue
+		npc.set_speed_magnitude(uniform_speed)
+
+	# Sinner commits to leaving the city (out of the screen).
+	var sinner := get_sinner()
+	if sinner and is_instance_valid(sinner):
+		var exit_dir := _pick_exit_direction(sinner)
+		sinner.start_escape(uniform_speed, exit_dir)
+
+func _pick_exit_direction(sinner: CrowdNPC) -> Vector2:
+	# Choose the nearest edge direction from sinner position (reads as "leaving the city")
+	var viewport_size := get_viewport().get_visible_rect().size
+	var center := sinner.position + Vector2(square_size * 0.5, square_size * 0.5)
+
+	var dist_left := center.x
+	var dist_right := viewport_size.x - center.x
+	var dist_top := center.y
+	var dist_bottom := viewport_size.y - center.y
+
+	var best := dist_left
+	var dir := Vector2.LEFT
+
+	if dist_right < best:
+		best = dist_right
+		dir = Vector2.RIGHT
+	if dist_top < best:
+		best = dist_top
+		dir = Vector2.UP
+	if dist_bottom < best:
+		best = dist_bottom
+		dir = Vector2.DOWN
+
+	return dir
+
 func _on_npc_selected(npc: CrowdNPC) -> void:
 	npc_selected.emit(npc)
+
+func _on_npc_escaped(npc: CrowdNPC) -> void:
+	if npc and is_instance_valid(npc) and npc.is_sinner:
+		sinner_escaped.emit()
 
 func _get_random_velocity() -> Vector2:
 	var speed := randf_range(speed_min, speed_max)
