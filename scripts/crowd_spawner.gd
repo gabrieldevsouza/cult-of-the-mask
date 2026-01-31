@@ -28,6 +28,7 @@ const PHASE_CONFIG := {
 var speed_modifier := 1.0
 var distractor_modifier := 1.0
 
+
 func set_phase(phase: int) -> void:
 	current_phase = phase
 	if PHASE_CONFIG.has(phase):
@@ -36,20 +37,24 @@ func set_phase(phase: int) -> void:
 		speed_min = float(config["speed_min"]) * speed_modifier
 		speed_max = float(config["speed_max"]) * speed_modifier
 
+
 func apply_relogio_effect() -> void:
 	speed_modifier = 0.7
 	for npc in npcs:
 		if is_instance_valid(npc):
 			npc.set_speed_magnitude(npc.velocity.length() * 0.7)
 
+
 func apply_visao_effect() -> void:
 	distractor_modifier = 0.5
+
 
 func clear() -> void:
 	for npc in npcs:
 		if is_instance_valid(npc):
 			npc.queue_free()
 	npcs.clear()
+
 
 func spawn_crowd() -> void:
 	if container == null:
@@ -80,7 +85,6 @@ func spawn_crowd() -> void:
 			vel *= 1.15
 
 		npc.setup(is_sinner, debug_show_sinner, vel, square_size, ui_top_margin)
-
 		npc.selected.connect(_on_npc_selected)
 		npc.escaped.connect(_on_npc_escaped)
 
@@ -89,33 +93,39 @@ func spawn_crowd() -> void:
 
 		npc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+
 func get_sinner() -> CrowdNPC:
 	for npc in npcs:
 		if npc.is_sinner:
 			return npc
 	return null
 
+
 func apply_monoculo_to_sinner() -> void:
 	var sinner := get_sinner()
 	if sinner and is_instance_valid(sinner):
 		sinner.apply_monoculo_effect()
 
-func begin_escape_phase(uniform_speed: float) -> void:
-	# Everyone moves at the same speed magnitude.
+
+# ✅ New: timed escape
+func begin_escape_phase(duration: float, crowd_uniform_speed: float) -> void:
+	# Everyone gets the same speed magnitude
 	for npc in npcs:
 		if not is_instance_valid(npc):
 			continue
-		npc.set_speed_magnitude(uniform_speed)
+		npc.set_speed_magnitude(crowd_uniform_speed)
 
-	# Sinner commits to leaving the city (out of the screen).
+	# Sinner: move to a target outside screen in exactly duration
 	var sinner := get_sinner()
 	if sinner and is_instance_valid(sinner):
-		var exit_dir := _pick_exit_direction(sinner)
-		sinner.start_escape(uniform_speed, exit_dir)
+		var target := _compute_escape_target(sinner)
+		sinner.start_timed_escape_to(target, duration)
 
-func _pick_exit_direction(sinner: CrowdNPC) -> Vector2:
-	# Choose the nearest edge direction from sinner position (reads as "leaving the city")
+
+func _compute_escape_target(sinner: CrowdNPC) -> Vector2:
 	var viewport_size := get_viewport().get_visible_rect().size
+
+	# Use sinner's center for edge choice
 	var center := sinner.position + Vector2(square_size * 0.5, square_size * 0.5)
 
 	var dist_left := center.x
@@ -136,19 +146,42 @@ func _pick_exit_direction(sinner: CrowdNPC) -> Vector2:
 		best = dist_bottom
 		dir = Vector2.DOWN
 
-	return dir
+	# Pick a target outside the screen along that edge
+	var margin_out := 80.0  # ensure fully outside
+	var target := sinner.position
+
+	if dir == Vector2.LEFT:
+		target.x = -margin_out - square_size
+		target.y = clamp(sinner.position.y, ui_top_margin, viewport_size.y - square_size)
+	elif dir == Vector2.RIGHT:
+		target.x = viewport_size.x + margin_out
+		target.y = clamp(sinner.position.y, ui_top_margin, viewport_size.y - square_size)
+	elif dir == Vector2.UP:
+		target.y = -margin_out - square_size
+		target.x = clamp(sinner.position.x, 0.0, viewport_size.x - square_size)
+	else: # DOWN
+		target.y = viewport_size.y + margin_out
+		target.x = clamp(sinner.position.x, 0.0, viewport_size.x - square_size)
+
+	return target
+
 
 func _on_npc_selected(npc: CrowdNPC) -> void:
 	npc_selected.emit(npc)
 
+
 func _on_npc_escaped(npc: CrowdNPC) -> void:
 	if npc and is_instance_valid(npc) and npc.is_sinner:
+		# Stop updates so it doesn't re-emit
+		npc.set_process(false)
 		sinner_escaped.emit()
+
 
 func _get_random_velocity() -> Vector2:
 	var speed := randf_range(speed_min, speed_max)
 	var angle := randf_range(0.0, TAU)
 	return Vector2(cos(angle), sin(angle)) * speed
+
 
 func _get_random_position(viewport_size: Vector2, margin: float, used_positions: Array[Vector2]) -> Vector2:
 	var max_attempts := 100

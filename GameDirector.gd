@@ -3,7 +3,7 @@ class_name GameDirector
 
 @export var round_time := 15.0
 @export var escape_time := 3.0
-@export var escape_uniform_speed := 260.0  # everyone same speed during escape
+@export var escape_uniform_speed := 220.0  # crowd speed during escape phase
 
 var time_left := 0.0
 var escape_left := 0.0
@@ -61,22 +61,26 @@ var in_dialogue := false
 var current_dialogue_npc: CrowdNPC = null
 var talked_npcs := {}
 
+
 func _ready() -> void:
 	randomize()
 	state = GameState.CUTSCENE
 	round_active = false
 
 	crowd_spawner.npc_selected.connect(_on_npc_selected)
-	crowd_spawner.sinner_escaped.connect(_on_sinner_left_screen)
+	crowd_spawner.sinner_escaped.connect(_on_sinner_escaped)
+
 	Inventory.item_collected.connect(_on_item_collected)
 
 	_update_items_ui()
 	_play_fade_in()
 
+
 func _play_fade_in() -> void:
 	fade_rect.modulate.a = 1.0
 	_set_crowd_clickable(false)
 	_start_intro_dialogue()
+
 
 func _start_intro_dialogue() -> void:
 	var balloon = BALLOON_SCENE.instantiate()
@@ -85,10 +89,12 @@ func _start_intro_dialogue() -> void:
 	DialogueManager.dialogue_ended.connect(_on_intro_ended, CONNECT_ONE_SHOT)
 	balloon.start(INTRO_DIALOGUE, "start")
 
+
 func _on_intro_ended(_resource) -> void:
 	if state != GameState.CUTSCENE:
 		return
 	_fade_to_phase(2)
+
 
 func _fade_to_phase(phase: int) -> void:
 	_set_crowd_clickable(false)
@@ -99,6 +105,7 @@ func _fade_to_phase(phase: int) -> void:
 	tween.tween_callback(_start_phase.bind(phase))
 	tween.tween_property(fade_rect, "modulate:a", 0.0, 0.8)
 	tween.tween_callback(func(): in_dialogue = false)
+
 
 func _start_phase(phase: int) -> void:
 	current_phase = phase
@@ -131,6 +138,7 @@ func _start_phase(phase: int) -> void:
 	state = GameState.NPC_DIALOGUE if npcs_needed > 0 else GameState.PLAYING
 	_set_crowd_clickable(true)
 
+
 func _process(delta: float) -> void:
 	if not round_active:
 		return
@@ -144,6 +152,7 @@ func _process(delta: float) -> void:
 			_update_timer_ui()
 			_begin_escape_phase()
 			return
+
 		_update_timer_ui()
 		_apply_endgame_pressure()
 
@@ -151,20 +160,32 @@ func _process(delta: float) -> void:
 		escape_left -= delta
 		if escape_left <= 0.0:
 			escape_left = 0.0
-			_escape() # grace ended
+			_update_timer_ui()
+			_escape()
 			return
+
 		_update_timer_ui()
+
 
 func _begin_escape_phase() -> void:
 	state = GameState.ESCAPE
-	message_label.text = "ELE ESTÁ FUGINDO!"
-	# Everyone same speed, sinner can now leave the screen
-	crowd_spawner.begin_escape_phase(escape_uniform_speed)
+	escape_left = escape_time
 
-func _on_sinner_left_screen() -> void:
-	# This is the REAL “escaped the city” lose condition
-	if state == GameState.ESCAPE:
+	message_label.text = "ELE ESTÁ FUGINDO!"
+	crowd_spawner.begin_escape_phase(escape_time, escape_uniform_speed)
+	_update_timer_ui()
+
+
+func _on_sinner_escaped() -> void:
+	# Failsafe only: only end if timer is essentially done.
+	# This keeps the UI truthful: timer == time until escape.
+	if state != GameState.ESCAPE:
+		return
+
+	if escape_left <= 0.05:
 		_escape()
+	# else ignore (we expect escape exactly when timer ends)
+
 
 func _update_timer_ui() -> void:
 	if timer_label == null:
@@ -181,6 +202,7 @@ func _update_timer_ui() -> void:
 	else:
 		timer_label.text = ""
 
+
 func _apply_endgame_pressure() -> void:
 	if time_left > 4.0:
 		return
@@ -194,11 +216,13 @@ func _apply_endgame_pressure() -> void:
 	else:
 		sinner.modulate = Color.WHITE
 
+
 func _set_crowd_clickable(enabled: bool) -> void:
 	var filter := Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
 	for npc in crowd_spawner.npcs:
 		if is_instance_valid(npc):
 			npc.mouse_filter = filter
+
 
 func _on_npc_selected(npc: CrowdNPC) -> void:
 	if in_dialogue:
@@ -213,6 +237,7 @@ func _on_npc_selected(npc: CrowdNPC) -> void:
 			_handle_kill(npc)
 		_:
 			pass
+
 
 func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	var needed: int = int(NPCS_PER_PHASE.get(current_phase, 0))
@@ -254,6 +279,7 @@ func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	else:
 		_on_npc_dialogue_ended(null)
 
+
 func _on_npc_dialogue_ended(_resource) -> void:
 	in_dialogue = false
 
@@ -266,6 +292,7 @@ func _on_npc_dialogue_ended(_resource) -> void:
 		pending_item = ""
 
 	_set_crowd_clickable(true)
+
 
 func _handle_kill(npc: CrowdNPC) -> void:
 	if npc.is_sinner:
@@ -280,6 +307,7 @@ func _handle_kill(npc: CrowdNPC) -> void:
 		tween.tween_callback(_start_sinner_dialogue)
 	else:
 		_game_over("Você matou um inocente. Você perdeu.")
+
 
 func _start_sinner_dialogue() -> void:
 	state = GameState.SINNER_DIALOGUE
@@ -296,13 +324,16 @@ func _start_sinner_dialogue() -> void:
 		in_dialogue = false
 		_advance_phase()
 
+
 func _on_sinner_dialogue_ended(_resource) -> void:
 	in_dialogue = false
 	_advance_phase()
 
+
 func _advance_phase() -> void:
 	crowd_spawner.clear()
 	_fade_to_phase(current_phase + 1)
+
 
 func _escape() -> void:
 	round_active = false
@@ -312,10 +343,12 @@ func _escape() -> void:
 	_freeze_crowd()
 	timer_label.text = ""
 
+
 func _freeze_crowd() -> void:
 	for npc in crowd_spawner.npcs:
 		if is_instance_valid(npc):
 			npc.set_process(false)
+
 
 func _on_item_collected(item_name: String) -> void:
 	_update_items_ui()
@@ -331,6 +364,7 @@ func _on_item_collected(item_name: String) -> void:
 			message_label.text = "Visão obtida! Menos distratores nas próximas fases."
 			crowd_spawner.apply_visao_effect()
 
+
 func _update_items_ui() -> void:
 	if items_label == null:
 		return
@@ -345,6 +379,7 @@ func _update_items_ui() -> void:
 
 	items_label.text = items_text
 
+
 func _victory() -> void:
 	state = GameState.VICTORY
 	round_active = false
@@ -356,6 +391,7 @@ func _victory() -> void:
 	_set_crowd_clickable(false)
 	_freeze_crowd()
 
+
 func _game_over(reason: String) -> void:
 	round_active = false
 	state = GameState.GAMEOVER
@@ -365,12 +401,14 @@ func _game_over(reason: String) -> void:
 	_set_crowd_clickable(false)
 	_freeze_crowd()
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if state != GameState.GAMEOVER:
 		return
 
 	if event is InputEventMouseButton and event.pressed:
 		_restart_game()
+
 
 func _restart_game() -> void:
 	for key in Inventory.items.keys():
