@@ -21,31 +21,32 @@ const PHASE_CONFIG := {
 	2: { "distractors": 30, "speed_min": 80.0, "speed_max": 180.0 },
 	3: { "distractors": 22, "speed_min": 60.0, "speed_max": 140.0 },
 	4: { "distractors": 15, "speed_min": 50.0, "speed_max": 120.0 },
-	5: { "distractors": 8, "speed_min": 40.0, "speed_max": 100.0 },
-	6: { "distractors": 0, "speed_min": 0.0, "speed_max": 0.0 },
+	5: { "distractors": 8,  "speed_min": 40.0, "speed_max": 100.0 },
+	6: { "distractors": 0,  "speed_min": 0.0,  "speed_max": 0.0 },
 }
 
 # Modificadores de efeitos de itens
-var speed_modifier := 1.0  # Relógio reduz para 0.7
-var distractor_modifier := 1.0  # Visão reduz para 0.5
+var speed_modifier := 1.0          # Relógio reduz para 0.7
+var distractor_modifier := 1.0     # Visão reduz para 0.5
 
 func set_phase(phase: int) -> void:
 	current_phase = phase
 	if PHASE_CONFIG.has(phase):
 		var config = PHASE_CONFIG[phase]
 		num_distractors = int(config["distractors"] * distractor_modifier)
-		speed_min = config["speed_min"] * speed_modifier
-		speed_max = config["speed_max"] * speed_modifier
+		speed_min = float(config["speed_min"]) * speed_modifier
+		speed_max = float(config["speed_max"]) * speed_modifier
 
 func apply_relogio_effect() -> void:
 	speed_modifier = 0.7
-	# Aplica aos NPCs existentes
+	# Apply to existing NPCs too
 	for npc in npcs:
 		if is_instance_valid(npc):
 			npc.velocity *= 0.7
 
 func apply_visao_effect() -> void:
 	distractor_modifier = 0.5
+	# Note: effect applies on next set_phase/spawn. (Jam-safe)
 
 func clear() -> void:
 	for npc in npcs:
@@ -64,10 +65,12 @@ func spawn_crowd() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var margin := 100.0
 	var used_positions: Array[Vector2] = []
+
 	var sinner_index := randi() % (num_distractors + 1)
 
 	for i in range(num_distractors + 1):
 		var is_sinner := (i == sinner_index)
+
 		var npc := CrowdNPC.new()
 		npc.size = Vector2(square_size, square_size)
 
@@ -95,8 +98,8 @@ func get_sinner() -> CrowdNPC:
 	return null
 
 func apply_monoculo_to_sinner() -> void:
-	var sinner = get_sinner()
-	if sinner:
+	var sinner := get_sinner()
+	if sinner and is_instance_valid(sinner):
 		sinner.apply_monoculo_effect()
 
 func _on_npc_selected(npc: CrowdNPC) -> void:

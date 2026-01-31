@@ -35,11 +35,12 @@ const PRINCIPAL_DIALOGUES := {
 	6: preload("res://dialogues/fase6_principal.dialogue"),
 }
 
-# Mapeamento de itens: fase -> { npc_index -> item_name }
+# Itens por fase:
+# IMPORTANT: This is "Nth unique conversation gives item", NOT "NPC index in scene".
 const PHASE_ITEMS := {
-	2: { 3: "monoculo" },  # NPC 3 da fase 2 dá o monóculo
-	3: { 1: "relogio" },   # NPC 1 da fase 3 dá o relógio
-	4: { 3: "visao_fase4" },  # NPC 3 da fase 4 dá a visão
+	2: { 3: "monoculo" },      # 3ª conversa da fase 2 dá o monóculo
+	3: { 1: "relogio" },       # 1ª conversa da fase 3 dá o relógio
+	4: { 3: "visao_fase4" },   # 3ª conversa da fase 4 dá a visão
 }
 
 # Número de NPCs a conversar por fase antes de poder clicar no sinner
@@ -57,49 +58,62 @@ var state: GameState = GameState.CUTSCENE
 var current_phase := 2
 var npc_dialogue_index := 0
 var correct_kills := 0
+
 var pending_item: String = ""
 var in_dialogue := false
 var current_dialogue_npc: CrowdNPC = null
+
+# Prevent farming the same NPC:
+# instance_id -> true
+var talked_npcs := {}
 
 func _ready() -> void:
 	randomize()
 	state = GameState.CUTSCENE
 	round_active = false
+
 	crowd_spawner.npc_selected.connect(_on_npc_selected)
 	Inventory.item_collected.connect(_on_item_collected)
+
 	_update_items_ui()
 	_play_fade_in()
 
 func _play_fade_in() -> void:
 	# Mantém tela preta durante o diálogo inicial
 	fade_rect.modulate.a = 1.0
+	_set_crowd_clickable(false)
 	_start_intro_dialogue()
 
 func _start_intro_dialogue() -> void:
-	DialogueManager.dialogue_ended.connect(_on_intro_ended)
 	var balloon = BALLOON_SCENE.instantiate()
 	get_tree().current_scene.add_child(balloon)
+
+	DialogueManager.dialogue_ended.connect(_on_intro_ended, CONNECT_ONE_SHOT)
 	balloon.start(INTRO_DIALOGUE, "start")
 
 func _on_intro_ended(_resource) -> void:
 	if state != GameState.CUTSCENE:
 		return
-
-	if DialogueManager.dialogue_ended.is_connected(_on_intro_ended):
-		DialogueManager.dialogue_ended.disconnect(_on_intro_ended)
-
 	_fade_to_phase(2)
 
 func _fade_to_phase(phase: int) -> void:
-	# Fade out
+	_set_crowd_clickable(false)
+	in_dialogue = true
+
 	var tween := create_tween()
 	tween.tween_property(fade_rect, "modulate:a", 1.0, 0.8)
 	tween.tween_callback(_start_phase.bind(phase))
 	tween.tween_property(fade_rect, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(func(): in_dialogue = false)
 
 func _start_phase(phase: int) -> void:
+	# Reset phase-local state
 	current_phase = phase
 	npc_dialogue_index = 0
+	pending_item = ""
+	current_dialogue_npc = null
+	talked_npcs.clear()
+	in_dialogue = false
 
 	crowd_spawner.set_phase(phase)
 
@@ -110,42 +124,36 @@ func _start_phase(phase: int) -> void:
 	message_label.text = "Fase %d - Encontre o alvo!" % phase
 	score_label.text = "Alvos eliminados: %d/5" % correct_kills
 
-	# Iniciar timer logo no início da fase
+	# Start timer at phase start (as your friend intended)
 	time_left = round_time
 	round_active = true
 	_update_timer_ui()
 
 	await crowd_spawner.spawn_crowd()
 
-	# Aplicar efeito do monóculo se tiver
+	# Apply monocle if owned
 	if Inventory.has("monoculo"):
 		crowd_spawner.apply_monoculo_to_sinner()
 
-	var npcs_needed = NPCS_PER_PHASE.get(phase, 0)
+	# ✅ FIX: cast Variant -> int
+	var npcs_needed: int = int(NPCS_PER_PHASE.get(phase, 0))
+
 	if npcs_needed > 0:
 		state = GameState.NPC_DIALOGUE
-		_set_crowd_clickable(true)
 	else:
-		# Fase 6: vai direto pro gameplay
 		state = GameState.PLAYING
-		_set_crowd_clickable(true)
 
-func _start_round() -> void:
-	if state != GameState.PLAYING:
-		return
-
-	message_label.text = "Elimine o pecador antes que ele escape!"
-	score_label.text = "Alvos eliminados: %d/5" % correct_kills
 	_set_crowd_clickable(true)
 
 func _process(delta: float) -> void:
 	if not round_active:
 		return
 
-	# Timer roda durante NPC_DIALOGUE e PLAYING, mas pausa durante diálogos
+	# Timer should only run during these states
 	if state != GameState.NPC_DIALOGUE and state != GameState.PLAYING:
 		return
 
+	# Pause timer during dialogue balloons / transitions
 	if in_dialogue:
 		return
 
@@ -162,7 +170,8 @@ func _process(delta: float) -> void:
 func _update_timer_ui() -> void:
 	if timer_label == null:
 		return
-	if round_active and (state == GameState.NPC_DIALOGUE or state == GameState.PLAYING):
+
+	if round_active and (state == GameState.NPC_DIALOGUE or state == GameState.PLAYING) and not in_dialogue:
 		timer_label.text = "Tempo: %.1f" % time_left
 	else:
 		timer_label.text = ""
@@ -199,54 +208,76 @@ func _freeze_crowd() -> void:
 			npc.set_process(false)
 
 func _on_npc_selected(npc: CrowdNPC) -> void:
+	# Hard gate during any dialogue balloon / transition
+	if in_dialogue:
+		return
+
+	# Safety
+	if npc == null or not is_instance_valid(npc):
+		return
+
 	match state:
 		GameState.NPC_DIALOGUE:
 			_handle_npc_dialogue(npc)
 		GameState.PLAYING:
 			_handle_kill(npc)
+		_:
+			pass
 
 func _handle_npc_dialogue(npc: CrowdNPC) -> void:
+	# ✅ FIX: cast Variant -> int
+	var needed: int = int(NPCS_PER_PHASE.get(current_phase, 0))
+
+	# Enforce: must talk to N NPCs before killing sinner
 	if npc.is_sinner:
-		# Pode clicar no sinner a qualquer momento - vai direto para o kill
+		if npc_dialogue_index < needed:
+			message_label.text = "Converse com mais %d pessoa(s)..." % (needed - npc_dialogue_index)
+			return
 		state = GameState.PLAYING
-		round_active = true
 		_handle_kill(npc)
 		return
+
+	# Prevent talking to the same NPC multiple times
+	var id := npc.get_instance_id()
+	if talked_npcs.has(id):
+		message_label.text = "Você já falou com essa pessoa."
+		return
+	talked_npcs[id] = true
 
 	_set_crowd_clickable(false)
 	npc_dialogue_index += 1
 
-	# Marca o NPC como "em diálogo" com cor vinho
+	# Mark NPC as "in dialogue"
 	current_dialogue_npc = npc
-	npc.color = Color(0.5, 0.1, 0.1)  # Tom vinho
+	npc.color = Color(0.5, 0.1, 0.1)  # vinho
 
-	# Verificar se este NPC dá um item
+	# Check pending item for this conversation number
 	var phase_items = PHASE_ITEMS.get(current_phase, {})
 	if phase_items.has(npc_dialogue_index):
 		pending_item = phase_items[npc_dialogue_index]
 
-	# Tocar diálogo do NPC
 	var dialogue_resource = NPC_DIALOGUES.get(current_phase)
 	if dialogue_resource:
 		in_dialogue = true
-		var title = "npc_%d" % npc_dialogue_index
-		DialogueManager.dialogue_ended.connect(_on_npc_dialogue_ended)
+		var title := "npc_%d" % npc_dialogue_index
+
 		var balloon = BALLOON_SCENE.instantiate()
 		get_tree().current_scene.add_child(balloon)
+
+		DialogueManager.dialogue_ended.connect(_on_npc_dialogue_ended, CONNECT_ONE_SHOT)
 		balloon.start(dialogue_resource, title)
+	else:
+		_on_npc_dialogue_ended(null)
 
 func _on_npc_dialogue_ended(_resource) -> void:
-	if DialogueManager.dialogue_ended.is_connected(_on_npc_dialogue_ended):
-		DialogueManager.dialogue_ended.disconnect(_on_npc_dialogue_ended)
-
 	in_dialogue = false
 
-	# Restaura cor cinza do NPC
+	# Restore NPC color
 	if current_dialogue_npc and is_instance_valid(current_dialogue_npc):
 		current_dialogue_npc.color = Color.GRAY
 	current_dialogue_npc = null
 
-	# Coletar item pendente
+	# Collect item
 	if pending_item != "":
 		Inventory.collect(pending_item)
 		pending_item = ""
@@ -261,7 +292,6 @@ func _handle_kill(npc: CrowdNPC) -> void:
 		round_active = false
 		_set_crowd_clickable(false)
 
-		# Flash no sinner
 		var tween := create_tween()
 		tween.tween_property(npc, "modulate", Color.WHITE * 2.0, 0.08)
 		tween.tween_callback(_start_sinner_dialogue)
@@ -270,21 +300,21 @@ func _handle_kill(npc: CrowdNPC) -> void:
 
 func _start_sinner_dialogue() -> void:
 	state = GameState.SINNER_DIALOGUE
-	# Manter movimento dos quadrados durante o diálogo
+	in_dialogue = true
 
 	var dialogue_resource = PRINCIPAL_DIALOGUES.get(current_phase)
 	if dialogue_resource:
-		DialogueManager.dialogue_ended.connect(_on_sinner_dialogue_ended)
 		var balloon = BALLOON_SCENE.instantiate()
 		get_tree().current_scene.add_child(balloon)
+
+		DialogueManager.dialogue_ended.connect(_on_sinner_dialogue_ended, CONNECT_ONE_SHOT)
 		balloon.start(dialogue_resource, "start")
 	else:
+		in_dialogue = false
 		_advance_phase()
 
 func _on_sinner_dialogue_ended(_resource) -> void:
-	if DialogueManager.dialogue_ended.is_connected(_on_sinner_dialogue_ended):
-		DialogueManager.dialogue_ended.disconnect(_on_sinner_dialogue_ended)
-
+	in_dialogue = false
 	_advance_phase()
 
 func _advance_phase() -> void:
@@ -322,13 +352,19 @@ func _update_items_ui() -> void:
 func _victory() -> void:
 	state = GameState.VICTORY
 	round_active = false
+	in_dialogue = false
+
 	message_label.text = "Você completou a Limpeza! Glória ao Deus Ocultus!"
 	timer_label.text = ""
+
+	_set_crowd_clickable(false)
 	_freeze_crowd()
 
 func _game_over(reason: String) -> void:
 	round_active = false
 	state = GameState.GAMEOVER
+	in_dialogue = false
+
 	message_label.text = reason + " (Clique para recomeçar)"
 	_set_crowd_clickable(false)
 	_freeze_crowd()
@@ -345,6 +381,12 @@ func _restart_game() -> void:
 	for key in Inventory.items.keys():
 		Inventory.items[key] = false
 
+	# Reset local state
+	talked_npcs.clear()
+	pending_item = ""
+	current_dialogue_npc = null
+	in_dialogue = false
+
 	# Reset spawner modifiers
 	crowd_spawner.speed_modifier = 1.0
 	crowd_spawner.distractor_modifier = 1.0
@@ -352,4 +394,7 @@ func _restart_game() -> void:
 	crowd_spawner.clear()
 	correct_kills = 0
 	_update_items_ui()
-	_start_phase(2)
+
+	# Restart flow directly at phase 2
+	state = GameState.CUTSCENE
+	_fade_to_phase(2)
