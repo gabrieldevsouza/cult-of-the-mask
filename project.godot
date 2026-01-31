@@ -22,6 +22,8 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 DialogueManager="*uid://c3rodes2l3gxb"
 Inventory="*res://inventory.gd"
+AudioManager="*res://audio_manager.gd"
+GameMode="*res://game_mode.gd"
 
 [display]
 

@@ -28,6 +28,11 @@ const PHASE_CONFIG := {
 var speed_modifier := 1.0
 var distractor_modifier := 1.0
 
+# Infinite mode constants
+const INFINITE_BASE_DISTRACTORS := 15
+const INFINITE_BASE_SPEED_MIN := 60.0
+const INFINITE_BASE_SPEED_MAX := 140.0
+
 
 func set_phase(phase: int) -> void:
 	current_phase = phase
@@ -47,6 +52,31 @@ func apply_relogio_effect() -> void:
 
 func apply_visao_effect() -> void:
 	distractor_modifier = 0.5
+
+
+func set_infinite_wave(wave: int) -> void:
+	# Tier aumenta a cada 5 ondas
+	var tier := (wave - 1) / 5  # 0, 1, 2, 3...
+
+	# Alternancia: tiers impares aumentam distractors, tiers pares aumentam velocidade
+	# tier 0: base
+	# tier 1 (ondas 6-10): +1 nivel de distractors
+	# tier 2 (ondas 11-15): +1 nivel de velocidade
+	# tier 3 (ondas 16-20): +2 niveis de distractors
+	# tier 4 (ondas 21-25): +2 niveis de velocidade
+	var distractor_level := (tier + 1) / 2  # 0, 1, 1, 2, 2, 3, 3...
+	var speed_level := tier / 2              # 0, 0, 1, 1, 2, 2, 3...
+
+	# Distractors: +10 por nivel
+	num_distractors = int((INFINITE_BASE_DISTRACTORS + distractor_level * 10) * distractor_modifier)
+	num_distractors = clampi(num_distractors, 5, 80)
+
+	# Speed: juros simples (+15% por nivel)
+	var speed_mult := 1.0 + speed_level * 0.15
+	speed_min = INFINITE_BASE_SPEED_MIN * speed_mult * speed_modifier
+	speed_max = INFINITE_BASE_SPEED_MAX * speed_mult * speed_modifier
+	speed_min = clampf(speed_min, 40.0, 300.0)
+	speed_max = clampf(speed_max, 100.0, 450.0)
 
 
 func clear() -> void:
