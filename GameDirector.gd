@@ -14,6 +14,7 @@ var round_active := false
 @onready var message_label: Label = $UI/MessageLabel
 @onready var items_label: Label = $UI/ItemsLabel
 @onready var fade_rect: ColorRect = $FadeLayer/FadeRect
+@onready var bad_ending_bg: TextureRect = %BadEndingBackground
 @onready var crowd_spawner: CrowdSpawner = $CrowdSpawner
 @onready var item_spawner: ItemSpawner = $ItemSpawner
 @onready var protagonist: Protagonist = $Squares/Protagonist
@@ -43,17 +44,30 @@ var tutorial_active := false
 const TUTORIAL_TITLES := {
 	"monoculo": "New Item!",
 	"relogio": "New Item!",
+	"rosario": "New Item!",
+	"lagrima": "New Item!",
+	"calice": "New Item!",
 }
 
 const TUTORIAL_IMAGES := {
 	"monoculo": preload("res://images/monoculo_grande.png"),
 	"relogio": preload("res://images/relogio_grande.png"),
+	"rosario": preload("res://images/cruz_de_malta_fds_grande.png"),
+	"lagrima": preload("res://images/frasco_de_lagrima_grande.png"),
+	"calice": preload("res://images/grande_calice.png"),
 }
 
 const TUTORIAL_DESCRIPTIONS := {
 	"monoculo": "MONOCLE OF TRUTH\n\nReveals sinners with a special glow. Lasts 3 waves.",
 	"relogio": "POCKET WATCH\n\nSlows down all NPCs. Lasts 3 waves.",
+	"rosario": "CORRUPTED ROSARY\n\nEvery 5 kills, gain 1 extra life. Lasts 3 waves.",
+	"lagrima": "PRIESTESS TEAR\n\nNext wave will have no innocents - only sinners.",
+	"calice": "BLOOD CHALICE\n\nRestores 1 life immediately.",
 }
+
+# Dead body sprite (story mode only)
+const DEAD_BODY_TEXTURE := preload("res://images/corpo_morto_1.png")
+var last_sinner_position: Vector2 = Vector2.ZERO
 
 # Scenario elements (to hide in infinite mode)
 @onready var scenario_casa1: Sprite2D = $ScenarioBackground/Casa1
@@ -1002,6 +1016,9 @@ func _handle_kill(npc: CrowdNPC) -> void:
 		correct_kills += 1
 		score_label.text = "Targets eliminated: %d/5" % correct_kills
 
+		# Save sinner position before moving them (for dead body spawn)
+		last_sinner_position = npc.position
+
 		round_active = false
 		_set_crowd_clickable(false)
 		npc.freeze()
@@ -1047,6 +1064,9 @@ func _advance_phase() -> void:
 	# Play kill sound after sinner dialogue ends
 	AudioManager.play_kill_sound(false)
 
+	# Spawn dead body at sinner's original position (story mode only)
+	_spawn_dead_body(last_sinner_position)
+
 	# Check if we're completing phase 6 - start final phase
 	if current_phase == 6:
 		crowd_spawner.clear()
@@ -1066,10 +1086,22 @@ func _escape() -> void:
 
 	round_active = false
 	state = GameState.GAMEOVER
-	message_label.text = "He escaped the city. You lose. (Click to restart)"
+	message_label.text = ""
 	_set_crowd_clickable(false)
 	_freeze_crowd()
 	timer_label.text = ""
+
+	# Clear the game area
+	crowd_spawner.clear()
+	_clear_dead_bodies()
+
+	# Update game over panel for story mode
+	game_over_wave_label.text = "Phase reached: %d" % current_phase
+	game_over_kills_label.text = "Sinners eliminated: %d/5" % correct_kills
+
+	# Show game over panel
+	game_over_panel.show()
+
 	# Audio: para heartbeat e toca musica de game over
 	AudioManager.stop_heartbeat()
 	AudioManager.play_gameover_music()
@@ -1269,10 +1301,16 @@ func _on_play_again_pressed() -> void:
 	crowd_spawner.speed_modifier = 1.0
 	crowd_spawner.distractor_modifier = 1.0
 
+	# Clear dead bodies from previous game
+	_clear_dead_bodies()
+
 	_update_items_ui()
 
-	# Restart infinite mode
-	_start_infinite_mode()
+	# Restart based on game mode
+	if GameMode.is_infinite():
+		_start_infinite_mode()
+	else:
+		_restart_game()
 
 
 func _on_menu_button_pressed() -> void:
@@ -1296,6 +1334,7 @@ func _restart_game() -> void:
 	crowd_spawner.distractor_modifier = 1.0
 
 	crowd_spawner.clear()
+	_clear_dead_bodies()
 	correct_kills = 0
 	_update_items_ui()
 
@@ -1352,6 +1391,9 @@ func _handle_final_kill(npc: CrowdNPC) -> void:
 	final_kills += 1
 	score_label.text = "Enemies: %d/%d" % [final_kills, final_total_enemies]
 
+	# Spawn dead body at NPC position (story mode only - final phase is part of story)
+	_spawn_dead_body(npc.position)
+
 	# Flash effect on killed enemy
 	var tween := create_tween()
 	tween.tween_property(npc, "modulate", Color.WHITE * 2.0, 0.08)
@@ -1360,6 +1402,34 @@ func _handle_final_kill(npc: CrowdNPC) -> void:
 	# Check if all enemies killed
 	if final_kills >= final_total_enemies:
 		_final_victory()
+
+
+func _spawn_dead_body(pos: Vector2) -> void:
+	# Only spawn in story mode (not infinite)
+	if GameMode.is_infinite():
+		return
+
+	var body := TextureRect.new()
+	body.texture = DEAD_BODY_TEXTURE
+	body.position = pos
+	body.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	body.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	body.size = Vector2(60, 40)
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.z_index = -1  # Behind NPCs but above ground
+
+	if squares_container:
+		squares_container.add_child(body)
+
+
+func _clear_dead_bodies() -> void:
+	if not squares_container:
+		return
+
+	# Remove all dead body sprites (TextureRect with DEAD_BODY_TEXTURE)
+	for child in squares_container.get_children():
+		if child is TextureRect and child.texture == DEAD_BODY_TEXTURE:
+			child.queue_free()
 
 
 func _final_timeout() -> void:
@@ -1385,7 +1455,7 @@ func _final_timeout() -> void:
 	get_tree().current_scene.add_child(balloon)
 
 	DialogueManager.dialogue_ended.connect(_on_bad_ending_part1_ended, CONNECT_ONE_SHOT)
-	balloon.start(FINAL_DIALOGUE, "ending_bad_1")
+	balloon.start(FINAL_DIALOGUE, "ending_bad_1", [], false)
 
 
 var npc_circle_targets: Dictionary = {}  # NPC instance ID -> target position on circle
@@ -1513,18 +1583,27 @@ func _play_bad_ending_sounds() -> void:
 
 
 func _show_bad_ending_part2() -> void:
+	# Show bad ending background image
+	if bad_ending_bg:
+		bad_ending_bg.show()
+
 	# Play second part of bad ending dialogue
 	in_dialogue = true
 	var balloon = BALLOON_SCENE.instantiate()
 	get_tree().current_scene.add_child(balloon)
 
 	DialogueManager.dialogue_ended.connect(_on_bad_ending_ended, CONNECT_ONE_SHOT)
-	balloon.start(FINAL_DIALOGUE, "ending_bad_2")
+	balloon.start(FINAL_DIALOGUE, "ending_bad_2", [], false)
 
 
 func _on_bad_ending_ended(_resource) -> void:
 	in_dialogue = false
 	bad_ending_in_progress = false
+
+	# Hide bad ending background
+	if bad_ending_bg:
+		bad_ending_bg.hide()
+
 	# Fade to black before showing credits
 	var tween := create_tween()
 	tween.tween_property(fade_rect, "modulate:a", 1.0, 1.5)
@@ -1546,7 +1625,7 @@ func _final_victory() -> void:
 	get_tree().current_scene.add_child(balloon)
 
 	DialogueManager.dialogue_ended.connect(_on_good_ending_ended, CONNECT_ONE_SHOT)
-	balloon.start(FINAL_DIALOGUE, "ending_good")
+	balloon.start(FINAL_DIALOGUE, "ending_good", [], false)
 
 
 func _on_good_ending_ended(_resource) -> void:

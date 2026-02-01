@@ -24,6 +24,9 @@ const ITEM_LABELS := {
 const ITEM_TEXTURES := {
 	"monoculo": preload("res://images/monoculo.png"),
 	"relogio": preload("res://images/relogio_de_bolso_2.png"),
+	"rosario": preload("res://images/cruz_de_malta_fds.png"),
+	"lagrima": preload("res://images/frasco_de_lagrima.png"),
+	"calice": preload("res://images/calice.png"),
 }
 
 var color_rect: ColorRect

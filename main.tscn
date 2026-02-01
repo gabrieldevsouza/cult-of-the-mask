@@ -17,6 +17,10 @@
 [ext_resource type="Texture2D" uid="uid://bug1xqkdhftdw" path="res://scenario/POSTE_QUEBRADO_2.png" id="15_poste_q2"]
 [ext_resource type="Texture2D" path="res://images/monoculo_grande.png" id="16_monoculo_grande"]
 [ext_resource type="Texture2D" path="res://images/relogio_grande.png" id="17_relogio_grande"]
+[ext_resource type="Texture2D" path="res://images/cruz_de_malta_fds_grande.png" id="18_rosario_grande"]
+[ext_resource type="Texture2D" path="res://images/frasco_de_lagrima_grande.png" id="19_lagrima_grande"]
+[ext_resource type="Texture2D" path="res://images/game_over_screen.png" id="20_gameover_bg"]
+[ext_resource type="Texture2D" path="res://images/tela_final_bad_ending.png" id="21_bad_ending_bg"]
 
 [node name="Main" type="Node2D" unique_id=1542657908]
 script = ExtResource("1_main")
@@ -168,6 +172,19 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
+[node name="BadEndingBackground" type="TextureRect" parent="FadeLayer"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("21_bad_ending_bg")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="GameOverPanel" type="Control" parent="FadeLayer" unique_id=1869072728]
 visible = false
 layout_mode = 3
@@ -177,14 +194,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="FadeLayer/GameOverPanel" unique_id=550421959]
+[node name="Background" type="TextureRect" parent="FadeLayer/GameOverPanel" unique_id=550421959]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.02, 0.08, 1)
+texture = ExtResource("20_gameover_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="VBox" type="VBoxContainer" parent="FadeLayer/GameOverPanel" unique_id=691322799]
 layout_mode = 1
@@ -326,20 +345,25 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -200.0
-offset_right = 320.0
-offset_bottom = 200.0
+offset_left = -340.0
+offset_top = -320.0
+offset_right = 340.0
+offset_bottom = 320.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 theme_override_constants/margin_left = 30
-theme_override_constants/margin_top = 25
+theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 30
 theme_override_constants/margin_bottom = 25
 
 [node name="Panel" type="Panel" parent="FadeLayer/TutorialPanel/ContentBox"]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="VBox" type="VBoxContainer" parent="FadeLayer/TutorialPanel/ContentBox"]

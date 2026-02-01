@@ -12,7 +12,7 @@ border_width_top = 3
 border_color = Color(1, 1, 1, 0.5)
 
 [node name="VisualNovelBalloon" type="CanvasLayer"]
-layer = 100
+layer = 250
 script = ExtResource("1_script")
 
 [node name="Balloon" type="Control" parent="."]
@@ -62,6 +62,7 @@ offset_top = -500.0
 offset_right = -150.0
 offset_bottom = -150.0
 mouse_filter = 2
+texture_filter = 0
 expand_mode = 1
 stretch_mode = 5
 
@@ -79,6 +80,7 @@ offset_top = -500.0
 offset_right = 450.0
 offset_bottom = -150.0
 mouse_filter = 2
+texture_filter = 0
 expand_mode = 1
 stretch_mode = 5
 

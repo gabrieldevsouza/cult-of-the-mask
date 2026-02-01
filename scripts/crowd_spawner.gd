@@ -194,7 +194,7 @@ func spawn_crowd() -> void:
 
 func get_sinner() -> CrowdNPC:
 	for npc in npcs:
-		if npc.is_sinner:
+		if is_instance_valid(npc) and npc.is_sinner:
 			return npc
 	return null
 

@@ -11,6 +11,7 @@ var is_waiting_for_input: bool = false
 var will_hide_balloon: bool = false
 var locals: Dictionary = {}
 var hide_characters: bool = false
+var characters_initialized: bool = false
 
 # Guard rail to prevent rapid clicking
 var input_cooldown: float = 0.0
@@ -111,6 +112,10 @@ func _ready() -> void:
 	mutation_cooldown.timeout.connect(_on_mutation_cooldown_timeout)
 	add_child(mutation_cooldown)
 
+	# Set nearest filter for pixel art characters
+	left_character.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	right_character.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+
 
 func _process(delta: float) -> void:
 	if input_cooldown > 0:
@@ -135,6 +140,7 @@ func start(dialogue_resource: DialogueResource, title: String, extra_game_states
 	is_waiting_for_input = false
 	resource = dialogue_resource
 	hide_characters = not show_characters
+	characters_initialized = false  # Reset for new dialogue
 	input_cooldown = INPUT_COOLDOWN_TIME  # Apply cooldown at dialogue start
 
 	# Show background if requested (for intro dialogue)
@@ -202,20 +208,45 @@ func update_character_display(character_name: String) -> void:
 
 	var side = character_sides.get(character_name, "right")  # Default: NPCs on right
 
-	if side == "none":
-		# Narrator or no character - dim both if visible
-		if left_character.visible:
-			dim_character(left_character)
-		if right_character.visible:
+	# On first dialogue line, show both characters immediately
+	if not characters_initialized:
+		characters_initialized = true
+		# Show Elisa (protagonist) on the left
+		show_character(left_character, "Elisa", side == "left")
+		# Show NPC on the right (use current character if on right, or a generic masked)
+		if side == "right":
+			show_character(right_character, character_name, true)
+		else:
+			# If first speaker is Elisa or Narrator, show the NPC dimmed
+			show_character(right_character, "Masked", false)
+
+		# Apply initial highlighting
+		if side == "left":
+			highlight_character(left_character)
 			dim_character(right_character)
-	elif side == "left":
-		show_character(left_character, character_name, true)
-		if right_character.visible:
-			dim_character(right_character)
-	elif side == "right":
-		show_character(right_character, character_name, true)
-		if left_character.visible:
+		elif side == "right":
+			highlight_character(right_character)
 			dim_character(left_character)
+		else:
+			# Narrator - dim both
+			dim_character(left_character)
+			dim_character(right_character)
+	else:
+		# After initialization, just update highlighting
+		if side == "none":
+			# Narrator or no character - dim both if visible
+			if left_character.visible:
+				dim_character(left_character)
+			if right_character.visible:
+				dim_character(right_character)
+		elif side == "left":
+			highlight_character(left_character)
+			if right_character.visible:
+				dim_character(right_character)
+		elif side == "right":
+			highlight_character(right_character)
+			if left_character.visible:
+				dim_character(left_character)
 
 	# Update character name color
 	if character_colors.has(character_name):

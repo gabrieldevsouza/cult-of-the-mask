@@ -12,7 +12,8 @@
       "Bash(python:*)",
       "Bash(ls:*)",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(wc:*)"
     ]
   }
 }

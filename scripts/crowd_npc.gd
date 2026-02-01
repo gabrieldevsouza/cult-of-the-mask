@@ -31,6 +31,15 @@ var pulse_tween: Tween = null
 var sparkle_sprite: TextureRect = null
 const SPARKLE_TEXTURE := preload("res://sprites/ice_sparkles.png")
 
+# Sparkle animation
+const SPARKLE_FRAME_COUNT := 5
+const SPARKLE_ANIMATION_FPS := 8.0
+var sparkle_current_frame := 0
+var sparkle_animation_timer := 0.0
+var sparkle_atlas_texture: AtlasTexture = null
+var sparkle_frame_width := 0
+var sparkle_frame_height := 0
+
 # Sprite animation
 var sprite: TextureRect
 var sprite_sheet_left: Texture2D
@@ -81,7 +90,6 @@ func setup(_is_sinner: bool, _debug_show_sinner: bool, _velocity: Vector2, _squa
 	# Create sparkle sprite for monoculo effect (hidden by default)
 	if sparkle_sprite == null:
 		sparkle_sprite = TextureRect.new()
-		sparkle_sprite.texture = SPARKLE_TEXTURE
 		sparkle_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		sparkle_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		sparkle_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -89,7 +97,18 @@ func setup(_is_sinner: bool, _debug_show_sinner: bool, _velocity: Vector2, _squa
 		# Position sparkle on top of the NPC (larger, centered)
 		sparkle_sprite.size = Vector2(square_size * 1.5, square_size * 1.5)
 		sparkle_sprite.position = Vector2(-square_size * 0.25, -square_size * 0.25)
+		sparkle_sprite.z_index = 10  # Above the sinner
 		add_child(sparkle_sprite)
+
+		# Setup sparkle animation with AtlasTexture
+		var sparkle_sheet_size := SPARKLE_TEXTURE.get_size()
+		sparkle_frame_width = int(sparkle_sheet_size.x / SPARKLE_FRAME_COUNT)
+		sparkle_frame_height = int(sparkle_sheet_size.y)
+
+		sparkle_atlas_texture = AtlasTexture.new()
+		sparkle_atlas_texture.atlas = SPARKLE_TEXTURE
+		sparkle_atlas_texture.region = Rect2(0, 0, sparkle_frame_width, sparkle_frame_height)
+		sparkle_sprite.texture = sparkle_atlas_texture
 
 	# Load sprite sheets
 	if is_sinner:
@@ -186,6 +205,14 @@ func _process(delta: float) -> void:
 		animation_timer = 0.0
 		current_frame = (current_frame + 1) % FRAME_COUNT
 		_update_frame()
+
+	# Animate sparkle sprite if monoculo is active
+	if monoculo_active and sparkle_atlas_texture:
+		sparkle_animation_timer += delta
+		if sparkle_animation_timer >= 1.0 / SPARKLE_ANIMATION_FPS:
+			sparkle_animation_timer = 0.0
+			sparkle_current_frame = (sparkle_current_frame + 1) % SPARKLE_FRAME_COUNT
+			sparkle_atlas_texture.region = Rect2(sparkle_current_frame * sparkle_frame_width, 0, sparkle_frame_width, sparkle_frame_height)
 
 	if escaping:
 		# No bounce. Leave city.
@@ -284,19 +311,25 @@ func _start_pulse() -> void:
 	if not sparkle_sprite:
 		return
 
+	# Reset sparkle animation
+	sparkle_current_frame = 0
+	sparkle_animation_timer = 0.0
+	if sparkle_atlas_texture:
+		sparkle_atlas_texture.region = Rect2(0, 0, sparkle_frame_width, sparkle_frame_height)
+
+	# Pulse opacity between 5% and 30%
+	sparkle_sprite.modulate.a = 0.3
 	pulse_tween = create_tween()
 	pulse_tween.set_loops()
-
-	# Pulse the sparkle sprite, not the character
-	pulse_tween.tween_property(sparkle_sprite, "modulate:a", 0.4, 0.4).set_ease(Tween.EASE_IN_OUT)
-	pulse_tween.tween_property(sparkle_sprite, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(sparkle_sprite, "modulate:a", 0.05, 0.5).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(sparkle_sprite, "modulate:a", 0.3, 0.5).set_ease(Tween.EASE_IN_OUT)
 
 
 func stop_monoculo_effect() -> void:
 	monoculo_active = false
 	if pulse_tween and is_instance_valid(pulse_tween):
 		pulse_tween.kill()
-	# Hide sparkle effect
+	# Hide sparkle effect and reset
 	if sparkle_sprite:
 		sparkle_sprite.visible = false
 		sparkle_sprite.modulate.a = 1.0

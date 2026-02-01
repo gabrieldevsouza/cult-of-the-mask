@@ -13,13 +13,13 @@ Elisa: DON'T COME NEAR ME YOU ANIMAL, YOU DON'T DESERVE MY LIGHT!
 
 # Ending 1 - Didn't kill everyone (gets attacked)
 ~ ending_bad_1
-[center]The crowd advances upon her...[/center]
+Narrator: [center]The crowd advances upon her...[/center]
 => END
 
 ~ ending_bad_2
-[center]Sounds of blood and flesh echo through the empty square.[/center]
-[center]...[/center]
-[center]She crawls out of the city, defeated.[/center]
+Narrator: [center]Sounds of blood and flesh echo through the empty square.[/center]
+Narrator: [center]...[/center]
+Narrator: [center]She crawls out of the city, defeated.[/center]
 => END
 
 # Ending 2 - Killed everyone
