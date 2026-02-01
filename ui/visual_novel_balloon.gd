@@ -10,6 +10,11 @@ var temporary_game_states: Array = []
 var is_waiting_for_input: bool = false
 var will_hide_balloon: bool = false
 var locals: Dictionary = {}
+var hide_characters: bool = false
+
+# Guard rail to prevent rapid clicking
+var input_cooldown: float = 0.0
+const INPUT_COOLDOWN_TIME: float = 0.3  # 300ms between inputs
 
 var _locale: String = TranslationServer.get_locale()
 
@@ -19,6 +24,8 @@ var dialogue_line: DialogueLine:
 			dialogue_line = value
 			apply_dialogue_line()
 		else:
+			# Emit dialogue_ended signal before closing
+			DialogueManager.dialogue_ended.emit(resource)
 			queue_free()
 	get:
 		return dialogue_line
@@ -32,19 +39,25 @@ var mutation_cooldown: Timer = Timer.new()
 @onready var left_character: ColorRect = %LeftCharacter
 @onready var right_character: ColorRect = %RightCharacter
 
-# Mapeamento de personagens para lados
+# Character to side mapping
 var character_sides: Dictionary = {
 	"Alice": "left",
 	"Bob": "right",
-	"Protagonista": "left",
-	"Mascarado": "right"
+	"Elisa": "left",
+	"Masked": "right",
+	"Leader Altiza": "right",
+	"Guillinger": "right",
+	"Narrator": "left"
 }
 
 var character_colors: Dictionary = {
 	"Alice": Color(0.6, 0.3, 0.7, 1),
 	"Bob": Color(0.3, 0.6, 0.7, 1),
-	"Protagonista": Color(0.8, 0.7, 0.5, 1),  # Dourado
-	"Mascarado": Color(0.5, 0.2, 0.2, 1)  # Vermelho escuro
+	"Elisa": Color(0.8, 0.7, 0.5, 1),  # Golden
+	"Masked": Color(0.5, 0.2, 0.2, 1),  # Dark red
+	"Leader Altiza": Color(0.7, 0.5, 0.8, 1),  # Purple
+	"Guillinger": Color(0.4, 0.5, 0.6, 1),  # Steel gray
+	"Narrator": Color(0.7, 0.7, 0.7, 1)  # Gray
 }
 
 
@@ -57,6 +70,11 @@ func _ready() -> void:
 
 	mutation_cooldown.timeout.connect(_on_mutation_cooldown_timeout)
 	add_child(mutation_cooldown)
+
+
+func _process(delta: float) -> void:
+	if input_cooldown > 0:
+		input_cooldown -= delta
 
 
 func _unhandled_input(_event: InputEvent) -> void:
@@ -72,15 +90,20 @@ func _notification(what: int) -> void:
 			dialogue_label.skip_typing()
 
 
-func start(dialogue_resource: DialogueResource, title: String, extra_game_states: Array = []) -> void:
+func start(dialogue_resource: DialogueResource, title: String, extra_game_states: Array = [], show_characters: bool = true) -> void:
 	temporary_game_states = [self] + extra_game_states
 	is_waiting_for_input = false
 	resource = dialogue_resource
+	hide_characters = not show_characters
+	input_cooldown = INPUT_COOLDOWN_TIME  # Apply cooldown at dialogue start
 	self.dialogue_line = await resource.get_next_dialogue_line(title, temporary_game_states)
 
 
 func apply_dialogue_line() -> void:
 	mutation_cooldown.stop()
+
+	# Apply cooldown when new dialogue line appears
+	input_cooldown = INPUT_COOLDOWN_TIME
 
 	is_waiting_for_input = false
 	balloon.focus_mode = Control.FOCUS_ALL
@@ -121,9 +144,18 @@ func apply_dialogue_line() -> void:
 
 
 func update_character_display(character_name: String) -> void:
+	# Hide character portraits if hide_characters is true
+	if hide_characters:
+		left_character.hide()
+		right_character.hide()
+		# Still update character name color
+		if character_colors.has(character_name):
+			character_label.add_theme_color_override("default_color", character_colors[character_name])
+		return
+
 	var side = character_sides.get(character_name, "")
 
-	# Escurece personagens inativos, destaca o ativo
+	# Dim inactive characters, highlight active one
 	var inactive_color := Color(0.5, 0.5, 0.5, 1)
 
 	if side == "left":
@@ -135,7 +167,7 @@ func update_character_display(character_name: String) -> void:
 		if left_character.visible:
 			dim_character(left_character)
 
-	# Atualiza a cor do nome baseado no personagem
+	# Update character name color
 	if character_colors.has(character_name):
 		character_label.add_theme_color_override("default_color", character_colors[character_name])
 
@@ -184,12 +216,18 @@ func _on_mutated(_mutation: Dictionary) -> void:
 
 
 func _on_balloon_gui_input(event: InputEvent) -> void:
+	# Guard rail: ignore input during cooldown
+	if input_cooldown > 0:
+		get_viewport().set_input_as_handled()
+		return
+
 	if dialogue_label.is_typing:
 		var mouse_was_clicked: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed()
 		var skip_button_was_pressed: bool = event.is_action_pressed(skip_action)
 		if mouse_was_clicked or skip_button_was_pressed:
 			get_viewport().set_input_as_handled()
 			dialogue_label.skip_typing()
+			input_cooldown = INPUT_COOLDOWN_TIME  # Apply cooldown after skipping typing
 			return
 
 	if not is_waiting_for_input: return
@@ -198,8 +236,10 @@ func _on_balloon_gui_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		input_cooldown = INPUT_COOLDOWN_TIME  # Apply cooldown before advancing
 		next(dialogue_line.next_id)
 	elif event.is_action_pressed(next_action) and get_viewport().gui_get_focus_owner() == balloon:
+		input_cooldown = INPUT_COOLDOWN_TIME  # Apply cooldown before advancing
 		next(dialogue_line.next_id)
 
 

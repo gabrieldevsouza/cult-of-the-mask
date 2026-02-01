@@ -1,6 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://menu001"]
+[gd_scene load_steps=11 format=3 uid="uid://menu001"]
 
 [ext_resource type="Script" path="res://ui/main_menu.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://font/dunwich-ink.regular.otf" id="2_font"]
+[ext_resource type="Texture2D" path="res://images/fundo_tela_de_inicio.png" id="3_bg"]
+[ext_resource type="Texture2D" path="res://images/start_button.png" id="4_start"]
+[ext_resource type="Texture2D" path="res://images/infinity_button.png" id="5_infinite"]
+[ext_resource type="Texture2D" path="res://images/controls_button.png" id="6_controls"]
+[ext_resource type="Texture2D" path="res://images/credits_button.png" id="7_credits"]
+[ext_resource type="Texture2D" path="res://images/quit_button.png" id="8_quit"]
+[ext_resource type="Texture2D" path="res://images/ggj00-roundlogo-900x900.png" id="9_ggj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.1, 0.1, 0.1, 0.9)
@@ -23,44 +31,32 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.02, 0.08, 1)
+texture = ExtResource("3_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -350.0
-offset_top = 60.0
-offset_right = 350.0
-offset_bottom = 130.0
+offset_left = -400.0
+offset_top = 120.0
+offset_right = 400.0
+offset_bottom = 220.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 52
-text = "CULT OF THE MASK"
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 100
+text = "Cult of the Mask"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="Subtitle" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -250.0
-offset_top = 135.0
-offset_right = 250.0
-offset_bottom = 170.0
-grow_horizontal = 2
-theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.7, 0.5, 0.3, 1)
-text = "A Limpeza dos Nao Integros"
-horizontal_alignment = 1
 
 [node name="MainButtons" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -69,103 +65,159 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -130.0
-offset_top = -60.0
-offset_right = 130.0
-offset_bottom = 160.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="StartButton" type="Button" parent="MainButtons"]
-custom_minimum_size = Vector2(240, 50)
+[node name="StartButton" type="TextureButton" parent="MainButtons"]
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Iniciar"
+size_flags_horizontal = 4
+texture_normal = ExtResource("4_start")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="InfiniteModeButton" type="Button" parent="MainButtons"]
-custom_minimum_size = Vector2(240, 50)
+[node name="InfiniteModeButton" type="TextureButton" parent="MainButtons"]
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Modo Infinito"
+size_flags_horizontal = 4
+texture_normal = ExtResource("5_infinite")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="ControlsButton" type="Button" parent="MainButtons"]
-custom_minimum_size = Vector2(240, 50)
+[node name="ControlsButton" type="TextureButton" parent="MainButtons"]
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Controles"
+size_flags_horizontal = 4
+texture_normal = ExtResource("6_controls")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="CreditsButton" type="Button" parent="MainButtons"]
-custom_minimum_size = Vector2(240, 50)
+[node name="CreditsButton" type="TextureButton" parent="MainButtons"]
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Creditos"
+size_flags_horizontal = 4
+texture_normal = ExtResource("7_credits")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="QuitButton" type="Button" parent="MainButtons"]
-custom_minimum_size = Vector2(240, 50)
+[node name="QuitButton" type="TextureButton" parent="MainButtons"]
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Sair"
+size_flags_horizontal = 4
+texture_normal = ExtResource("8_quit")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="CreditsPanel" type="Panel" parent="."]
+[node name="CreditsPanel" type="Control" parent="."]
 visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="TextureRect" parent="CreditsPanel"]
+modulate = Color(1, 1, 1, 0.3)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DarkOverlay" type="ColorRect" parent="CreditsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="VBox" type="VBoxContainer" parent="CreditsPanel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -170.0
-offset_right = 320.0
-offset_bottom = 270.0
+offset_left = -400.0
+offset_top = -250.0
+offset_right = 400.0
+offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
-
-[node name="VBox" type="VBoxContainer" parent="CreditsPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 30.0
-offset_top = 20.0
-offset_right = -30.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 15
 
 [node name="Title" type="Label" parent="CreditsPanel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Creditos"
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 48
+text = "CREDITS"
 horizontal_alignment = 1
 
 [node name="Content" type="Label" parent="CreditsPanel/VBox"]
 layout_mode = 2
-size_flags_vertical = 3
 theme_override_font_sizes/font_size = 18
-text = "Desenvolvido por:
-[Seu Nome]
+text = "Art and Design:
+By Theodora D. and Ananda Bispo
 
-Arte e Design:
-[Placeholder]
-
-Musica e Som:
-[Placeholder]
-
-Agradecimentos Especiais:
-[Placeholder]"
+Developers:
+Arthur Poggy and Gabriel de Souza"
 horizontal_alignment = 1
-vertical_alignment = 1
+
+[node name="MusicTitle" type="Label" parent="CreditsPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Music and Sound:"
+horizontal_alignment = 1
+
+[node name="MusicColumns" type="HBoxContainer" parent="CreditsPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 60
+
+[node name="Column1" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Dark Theme
+JaggedStone (CC0)
+opengameart.org/content/dark-theme
+
+Dark Shrine Loop
+qubodup (CC0)
+opengameart.org/content/dark-shrine-loop"
+horizontal_alignment = 1
+
+[node name="Column2" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Dragged Through Hellfire
+Zander Noriega (CC-BY 3.0)
+opengameart.org/content/dragged-through-hellfire
+
+Dark Ambience Loop
+Iwan Gabovitch (CC-BY 3.0)
+opengameart.org/content/dark-ambience-loop"
+horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="CreditsPanel/VBox"]
 custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
-text = "Voltar"
+text = "Back"
 
 [node name="ControlsPanel" type="Panel" parent="."]
 visible = false
@@ -199,7 +251,7 @@ theme_override_constants/separation = 8
 [node name="Title" type="Label" parent="ControlsPanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Controles"
+text = "Controls"
 horizontal_alignment = 1
 
 [node name="Content" type="Label" parent="ControlsPanel/VBox"]
@@ -207,11 +259,11 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 18
 text = "Mouse:
-Clique Esquerdo - Selecionar/Interagir
+Left Click - Select/Interact
 
-Teclado:
-ESC - Pausar (em breve)
-SPACE/ENTER - Avancar dialogo"
+Keyboard:
+ESC - Pause
+SPACE/ENTER - Advance dialogue"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -220,24 +272,80 @@ custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
-text = "Voltar"
+text = "Back"
 
-[node name="Version" type="Label" parent="."]
+[node name="InfiniteModePanel" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -120.0
+offset_right = 200.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="InfiniteModePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 20.0
+offset_right = -30.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="InfiniteModePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Select Mode"
+horizontal_alignment = 1
+
+[node name="FindButton" type="Button" parent="InfiniteModePanel/VBox"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "Find"
+
+[node name="KillButton" type="Button" parent="InfiniteModePanel/VBox"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "Kill"
+
+[node name="BackButton" type="Button" parent="InfiniteModePanel/VBox"]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+text = "Back"
+
+[node name="GGJLogo" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -30.0
+offset_left = -110.0
+offset_top = -110.0
 offset_right = -10.0
+offset_bottom = -10.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
-text = "v0.1 Alpha"
-horizontal_alignment = 2
+texture = ExtResource("9_ggj")
+expand_mode = 1
+stretch_mode = 5
 
 [connection signal="pressed" from="MainButtons/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="MainButtons/InfiniteModeButton" to="." method="_on_infinite_mode_button_pressed"]
@@ -246,3 +354,6 @@ horizontal_alignment = 2
 [connection signal="pressed" from="MainButtons/QuitButton" to="." method="_on_quit_button_pressed"]
 [connection signal="pressed" from="CreditsPanel/VBox/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="ControlsPanel/VBox/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="InfiniteModePanel/VBox/FindButton" to="." method="_on_find_mode_pressed"]
+[connection signal="pressed" from="InfiniteModePanel/VBox/KillButton" to="." method="_on_kill_mode_pressed"]
+[connection signal="pressed" from="InfiniteModePanel/VBox/BackButton" to="." method="_on_back_button_pressed"]

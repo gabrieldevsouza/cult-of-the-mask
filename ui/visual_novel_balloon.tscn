@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://vnballoon001"]
+[gd_scene format=3 uid="uid://vnballoon001"]
 
 [ext_resource type="Script" path="res://ui/visual_novel_balloon.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://ckvgyvclnwggo" path="res://addons/dialogue_manager/dialogue_label.tscn" id="2_dialogue_label"]
@@ -177,7 +177,7 @@ offset_right = -10.0
 offset_bottom = 50.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 16
-text = "Pular >>"
+text = "Skip >>"
 
 [connection signal="gui_input" from="Balloon" to="." method="_on_balloon_gui_input"]
 [connection signal="response_selected" from="Balloon/Responses/ResponsesMenu" to="." method="_on_responses_menu_response_selected"]

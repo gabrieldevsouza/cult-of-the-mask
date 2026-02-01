@@ -98,7 +98,7 @@ var sfx_files := {
 	SFXType.UI_BACK: "ui_back.ogg",
 
 	SFXType.NPC_SELECT: "npc_select.ogg",
-	SFXType.KILL_VISCERAL: "kill_visceral.ogg",
+	SFXType.KILL_VISCERAL: "res://audio/knifesharpener2.ogg",
 	SFXType.KILL_INNOCENT: "kill_innocent.ogg",
 	SFXType.ITEM_COLLECT: "item_collect.ogg",
 	SFXType.ITEM_SPECIAL: "item_special.ogg",
@@ -286,7 +286,12 @@ func play_sfx(sfx_type: SFXType, volume_modifier := 1.0) -> void:
 	if file_name.is_empty():
 		return
 
-	var full_path := SFX_PATH + file_name
+	# Support absolute paths (starting with res://)
+	var full_path: String
+	if file_name.begins_with("res://"):
+		full_path = file_name
+	else:
+		full_path = SFX_PATH + file_name
 
 	if not ResourceLoader.exists(full_path):
 		# Tenta usar foom_0.wav como fallback para kill
@@ -413,6 +418,11 @@ func play_victory_music() -> void:
 	play_bgm(BGMType.VICTORY)
 
 
+func play_final_phase_music() -> void:
+	_whisper_timer.stop()
+	play_bgm(BGMType.VICTORY)  # Uses FINAL.mp3
+
+
 func play_gameover_music() -> void:
 	_whisper_timer.stop()
 	play_bgm(BGMType.GAMEOVER)
@@ -448,6 +458,31 @@ func play_item_collect(is_special := false) -> void:
 
 func play_phase_complete() -> void:
 	play_sfx(SFXType.PHASE_COMPLETE)
+
+
+func play_sound_from_path(path: String, volume_modifier := 1.0) -> AudioStreamPlayer:
+	## Play a sound from a direct file path and return the player
+	if is_muted:
+		return null
+
+	if not ResourceLoader.exists(path):
+		push_warning("AudioManager: Sound not found: " + path)
+		return null
+
+	var stream := _load_sfx_from_path(path)
+	if stream == null:
+		return null
+
+	var player := _get_available_sfx_player()
+	if player == null:
+		return null
+
+	player.stream = stream
+	player.volume_db = linear_to_db(sfx_volume * master_volume * volume_modifier)
+	player.play()
+
+	sfx_played.emit(path)
+	return player
 
 
 # === EFEITOS DE PRESSAO/TENSAO ===

@@ -1,11 +1,68 @@
-[gd_scene load_steps=4 format=3 uid="uid://main001"]
+[gd_scene format=3 uid="uid://main001"]
 
 [ext_resource type="Script" uid="uid://bnbbhsxehit0c" path="res://GameDirector.gd" id="1_main"]
 [ext_resource type="Script" uid="uid://c75qw4ebo0neh" path="res://scripts/crowd_spawner.gd" id="2_0xm2m"]
-[ext_resource type="Script" path="res://scripts/item_spawner.gd" id="3_itemspawn"]
+[ext_resource type="Script" uid="uid://uj4d17m8gexc" path="res://scripts/item_spawner.gd" id="3_itemspawn"]
+[ext_resource type="Script" uid="uid://er2hdbyyr1oy" path="res://scripts/protagonist.gd" id="4_prota"]
+[ext_resource type="Texture2D" uid="uid://b02mf6aidry6u" path="res://scenario/TERRA.png" id="5_terra"]
+[ext_resource type="Texture2D" uid="uid://261gddhkcvne" path="res://scenario/POSTES_ILUMINADOS.png" id="6_postes"]
+[ext_resource type="Texture2D" uid="uid://bpf43jeytgksd" path="res://scenario/IGREJA.png" id="7_igreja"]
+[ext_resource type="Texture2D" uid="uid://b21uxl78rhhja" path="res://scenario/PLANTAS.png" id="8_plantas"]
+[ext_resource type="Texture2D" uid="uid://42k72cmbtjjh" path="res://scenario/casa_de_canto.png" id="9_casa1"]
+[ext_resource type="Texture2D" uid="uid://dnhtm1ufhlynm" path="res://scenario/casa_de_cant_esquerdo.png" id="10_casa2"]
+[ext_resource type="Texture2D" uid="uid://csdtvnqnp1rki" path="res://scenario/casa_de_canto_esquero_dois.png" id="11_casa3"]
+[ext_resource type="Texture2D" uid="uid://dvr1o10ayyoux" path="res://scenario/banco_iluminado_left.png" id="12_banco1"]
+[ext_resource type="Texture2D" uid="uid://dbkdc3ks0qlyd" path="res://scenario/banco_escuro_right.png" id="13_banco2"]
+[ext_resource type="Texture2D" uid="uid://dryw2lcohbrf3" path="res://scenario/POSTE_QUEBRADO_1.png" id="14_poste_q1"]
+[ext_resource type="Texture2D" uid="uid://bug1xqkdhftdw" path="res://scenario/POSTE_QUEBRADO_2.png" id="15_poste_q2"]
 
 [node name="Main" type="Node2D" unique_id=1542657908]
 script = ExtResource("1_main")
+
+[node name="ScenarioBackground" type="Node2D" parent="." unique_id=1971833339]
+z_index = -100
+
+[node name="Chao" type="Sprite2D" parent="ScenarioBackground" unique_id=87207051]
+z_index = -100
+position = Vector2(640, 360)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("5_terra")
+
+[node name="PostesDeLuzAcesos" type="Sprite2D" parent="ScenarioBackground" unique_id=476640973]
+z_index = -90
+position = Vector2(640, 360)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("6_postes")
+
+[node name="Igreja" type="Sprite2D" parent="ScenarioBackground" unique_id=1444866554]
+z_index = -80
+position = Vector2(640, 360)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("7_igreja")
+
+[node name="Plantas" type="Sprite2D" parent="ScenarioBackground" unique_id=27576730]
+z_index = -70
+position = Vector2(640, 360)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("8_plantas")
+
+[node name="Casa1" type="Sprite2D" parent="ScenarioBackground" unique_id=703050900]
+z_index = -60
+position = Vector2(1185, 195)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("9_casa1")
+
+[node name="Casa2" type="Sprite2D" parent="ScenarioBackground" unique_id=287115709]
+z_index = -50
+position = Vector2(95, 115)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("10_casa2")
+
+[node name="Casa3" type="Sprite2D" parent="ScenarioBackground" unique_id=1177307238]
+z_index = -40
+position = Vector2(30, 355)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("11_casa3")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=492954144]
 
@@ -13,7 +70,7 @@ script = ExtResource("1_main")
 offset_right = 280.0
 offset_bottom = 40.0
 theme_override_font_sizes/font_size = 28
-text = "Pontos: 0"
+text = "Score: 0"
 
 [node name="MessageLabel" type="Label" parent="UI" unique_id=702935493]
 anchors_preset = 5
@@ -25,7 +82,7 @@ offset_right = 200.0
 offset_bottom = 100.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 24
-text = "Encontre o quadrado vermelho!"
+text = "Find the red square!"
 horizontal_alignment = 1
 
 [node name="TimerLabel" type="Label" parent="UI" unique_id=1717072977]
@@ -60,7 +117,38 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+
+[node name="Protagonist" type="Control" parent="Squares" unique_id=638148493]
+layout_mode = 1
+anchors_preset = 0
+script = ExtResource("4_prota")
+
+[node name="ScenarioForeground" type="Node2D" parent="." unique_id=847591144]
+z_index = 50
+
+[node name="Banco1" type="Sprite2D" parent="ScenarioForeground" unique_id=497277243]
+z_index = 425
+position = Vector2(364.00003, 332)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("12_banco1")
+
+[node name="Banco2" type="Sprite2D" parent="ScenarioForeground" unique_id=1362395324]
+z_index = 420
+position = Vector2(781, 272)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("13_banco2")
+
+[node name="PosteQuebrado1" type="Sprite2D" parent="ScenarioForeground" unique_id=1561423395]
+z_index = 400
+position = Vector2(356, 515)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("14_poste_q1")
+
+[node name="PosteQuebrado2" type="Sprite2D" parent="ScenarioForeground" unique_id=476394785]
+z_index = 340
+position = Vector2(894, 237)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("15_poste_q2")
 
 [node name="FadeLayer" type="CanvasLayer" parent="." unique_id=1526556980]
 layer = 100
@@ -69,20 +157,25 @@ layer = 100
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -20.0
+offset_right = 11.0
+offset_bottom = 21.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="GameOverPanel" type="Control" parent="FadeLayer"]
+[node name="GameOverPanel" type="Control" parent="FadeLayer" unique_id=1869072728]
 visible = false
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="FadeLayer/GameOverPanel"]
+[node name="Background" type="ColorRect" parent="FadeLayer/GameOverPanel" unique_id=550421959]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -91,7 +184,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.05, 0.02, 0.08, 1)
 
-[node name="VBox" type="VBoxContainer" parent="FadeLayer/GameOverPanel"]
+[node name="VBox" type="VBoxContainer" parent="FadeLayer/GameOverPanel" unique_id=691322799]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -106,47 +199,232 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
 
-[node name="Title" type="Label" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="Title" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=1684779427]
 layout_mode = 2
-theme_override_font_sizes/font_size = 52
 theme_override_colors/font_color = Color(0.9, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 52
 text = "GAME OVER"
 horizontal_alignment = 1
 
-[node name="WaveLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="WaveLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=76453112]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Onda alcancada: 0"
+text = "Wave reached: 0"
 horizontal_alignment = 1
 
-[node name="KillsLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="KillsLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=213355835]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Pecadores eliminados: 0"
+text = "Sinners eliminated: 0"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="Spacer" type="Control" parent="FadeLayer/GameOverPanel/VBox" unique_id=1527436462]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
-[node name="PlayAgainButton" type="Button" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="PlayAgainButton" type="Button" parent="FadeLayer/GameOverPanel/VBox" unique_id=1944502781]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 22
-text = "Jogar Novamente"
+text = "Play Again"
 
-[node name="MenuButton" type="Button" parent="FadeLayer/GameOverPanel/VBox"]
+[node name="MenuButton" type="Button" parent="FadeLayer/GameOverPanel/VBox" unique_id=220954681]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 22
-text = "Voltar ao Menu"
+text = "Back to Menu"
+
+[node name="PausePanel" type="Control" parent="FadeLayer" unique_id=593376695]
+process_mode = 2
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="FadeLayer/PausePanel" unique_id=1904813768]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="VBox" type="VBoxContainer" parent="FadeLayer/PausePanel" unique_id=269364232]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="FadeLayer/PausePanel/VBox" unique_id=86425832]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 42
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="FadeLayer/PausePanel/VBox" unique_id=387722003]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="FadeLayer/PausePanel/VBox" unique_id=500369111]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 22
+text = "Resume"
+
+[node name="PauseMenuButton" type="Button" parent="FadeLayer/PausePanel/VBox" unique_id=506506437]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 22
+text = "Back to Menu"
 
 [node name="CrowdSpawner" type="Node" parent="." unique_id=1806782616]
 script = ExtResource("2_0xm2m")
 container_path = NodePath("../Squares")
 
-[node name="ItemSpawner" type="Node" parent="."]
+[node name="ItemSpawner" type="Node" parent="." unique_id=436498586]
 script = ExtResource("3_itemspawn")
 container_path = NodePath("../Squares")
+
+[node name="MASCARA DE COLISAO" type="ColorRect" parent="." unique_id=1918013668]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 193.0
+offset_right = 1099.0
+offset_bottom = 718.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO2" type="ColorRect" parent="." unique_id=2102264252]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 200.0
+offset_top = 81.0
+offset_right = 1094.0
+offset_bottom = 606.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO7" type="ColorRect" parent="MASCARA DE COLISAO2" unique_id=1122524944]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 728.0
+offset_top = -74.0
+offset_right = -1.0
+offset_bottom = -494.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO3" type="ColorRect" parent="." unique_id=846641905]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 204.0
+offset_top = -4.0
+offset_right = 367.0
+offset_bottom = 521.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO4" type="ColorRect" parent="." unique_id=626344694]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1064.0
+offset_top = 399.0
+offset_right = 1279.0
+offset_bottom = 718.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO5" type="ColorRect" parent="." unique_id=1504897040]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+offset_top = 531.0
+offset_right = 73.0
+offset_bottom = 725.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO6" type="ColorRect" parent="." unique_id=299620326]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 193.0
+offset_right = 1099.0
+offset_bottom = 718.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO7" type="ColorRect" parent="." unique_id=669977491]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1097.0
+offset_top = 263.0
+offset_right = 1151.0
+offset_bottom = 788.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MASCARA DE COLISAO8" type="ColorRect" parent="." unique_id=232769889]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 182.0
+offset_top = 329.0
+offset_right = 1217.0
+offset_bottom = 854.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)

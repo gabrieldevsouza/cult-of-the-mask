@@ -4,7 +4,7 @@ class_name CrowdSpawner
 signal npc_selected(npc: CrowdNPC)
 signal sinner_escaped()
 
-@export var square_size := 50.0
+@export var square_size := 65.0
 @export var num_distractors := 30
 @export var speed_min := 50.0
 @export var speed_max := 150.0
@@ -17,16 +17,83 @@ signal sinner_escaped()
 var npcs: Array[CrowdNPC] = []
 var current_phase := 2
 
+# Walkable areas from collision masks
+var walkable_areas: Array[Rect2] = []
+
+# Phase config: distractors = folks count, sinner is always +1
+# Base speed: 60-120, multiplied by speed_mult
 const PHASE_CONFIG := {
-	2: { "distractors": 30, "speed_min": 80.0, "speed_max": 180.0 },
-	3: { "distractors": 22, "speed_min": 60.0, "speed_max": 140.0 },
-	4: { "distractors": 15, "speed_min": 50.0, "speed_max": 120.0 },
-	5: { "distractors": 8,  "speed_min": 40.0, "speed_max": 100.0 },
-	6: { "distractors": 0,  "speed_min": 0.0,  "speed_max": 0.0 },
+	2: { "distractors": 15, "speed_min": 60.0,  "speed_max": 120.0 },   # 15 folks + 1 sinner
+	3: { "distractors": 21, "speed_min": 60.0,  "speed_max": 120.0 },   # 21 folks + 1 sinner
+	4: { "distractors": 17, "speed_min": 120.0, "speed_max": 240.0 },   # 17 folks + 1 sinner, x2 speed
+	5: { "distractors": 35, "speed_min": 90.0,  "speed_max": 180.0 },   # 35 folks + 1 sinner, x1.5 speed
+	6: { "distractors": 22, "speed_min": 180.0, "speed_max": 360.0 },   # 22 folks + 1 sinner, x3 speed
 }
 
 var speed_modifier := 1.0
 var distractor_modifier := 1.0
+
+
+func _ready() -> void:
+	# Collect walkable areas from collision masks
+	_collect_walkable_areas()
+
+
+func _collect_walkable_areas() -> void:
+	walkable_areas.clear()
+	var main_node := get_tree().current_scene
+	if main_node == null:
+		return
+
+	# Find all nodes that start with "MASCARA DE COLISAO"
+	for child in main_node.get_children():
+		if child is ColorRect and child.name.begins_with("MASCARA DE COLISAO"):
+			var rect := _get_control_rect(child)
+			if rect.size.x > 0 and rect.size.y > 0:
+				walkable_areas.append(rect)
+			# Also check children
+			_collect_mask_children(child)
+
+
+func _collect_mask_children(parent: Node) -> void:
+	for child in parent.get_children():
+		if child is ColorRect and child.name.begins_with("MASCARA DE COLISAO"):
+			var rect := _get_control_rect(child)
+			if rect.size.x > 0 and rect.size.y > 0:
+				walkable_areas.append(rect)
+			_collect_mask_children(child)
+
+
+func _get_control_rect(ctrl: ColorRect) -> Rect2:
+	# Get the global rect of the control
+	var rect := ctrl.get_global_rect()
+	return rect
+
+
+func is_point_in_walkable_area(point: Vector2) -> bool:
+	for area in walkable_areas:
+		if area.has_point(point):
+			return true
+	return false
+
+
+func is_rect_in_walkable_area(rect: Rect2) -> bool:
+	# Check if all corners of the rect are in a walkable area
+	var corners := [
+		rect.position,
+		rect.position + Vector2(rect.size.x, 0),
+		rect.position + Vector2(0, rect.size.y),
+		rect.position + rect.size
+	]
+	for corner in corners:
+		if not is_point_in_walkable_area(corner):
+			return false
+	return true
+
+
+func get_walkable_areas() -> Array[Rect2]:
+	return walkable_areas
+
 
 # Infinite mode constants
 const INFINITE_BASE_DISTRACTORS := 15
@@ -115,6 +182,7 @@ func spawn_crowd() -> void:
 			vel *= 1.15
 
 		npc.setup(is_sinner, debug_show_sinner, vel, square_size, ui_top_margin)
+		npc.set_walkable_areas(walkable_areas)
 		npc.selected.connect(_on_npc_selected)
 		npc.escaped.connect(_on_npc_escaped)
 
@@ -214,9 +282,38 @@ func _get_random_velocity() -> Vector2:
 
 
 func _get_random_position(viewport_size: Vector2, margin: float, used_positions: Array[Vector2]) -> Vector2:
-	var max_attempts := 100
+	var max_attempts := 200
 	var min_distance := square_size * 1.5
 
+	# If we have walkable areas, use them
+	if walkable_areas.size() > 0:
+		for _attempt in range(max_attempts):
+			# Pick a random walkable area
+			var area := walkable_areas[randi() % walkable_areas.size()]
+			var x := randf_range(area.position.x + margin * 0.2, area.end.x - square_size - margin * 0.2)
+			var y := randf_range(area.position.y + margin * 0.2, area.end.y - square_size - margin * 0.2)
+			var pos := Vector2(x, y)
+
+			# Check if position is valid (in any walkable area)
+			var npc_rect := Rect2(pos, Vector2(square_size, square_size))
+			if not is_point_in_walkable_area(pos + Vector2(square_size / 2, square_size / 2)):
+				continue
+
+			var ok := true
+			for used in used_positions:
+				if pos.distance_to(used) < min_distance:
+					ok = false
+					break
+
+			if ok:
+				return pos
+
+		# Fallback: return center of first walkable area
+		if walkable_areas.size() > 0:
+			var area := walkable_areas[0]
+			return area.position + area.size / 2 - Vector2(square_size / 2, square_size / 2)
+
+	# Fallback to original behavior
 	for _attempt in range(max_attempts):
 		var x := randf_range(margin, viewport_size.x - margin - square_size)
 		var y := randf_range(ui_top_margin + margin * 0.5, viewport_size.y - margin - square_size)
@@ -234,4 +331,90 @@ func _get_random_position(viewport_size: Vector2, margin: float, used_positions:
 	return Vector2(
 		randf_range(margin, viewport_size.x - margin - square_size),
 		randf_range(ui_top_margin + margin * 0.5, viewport_size.y - margin - square_size)
+	)
+
+
+func spawn_final_phase(enemy_count: int) -> void:
+	spawn_kill_wave(enemy_count, 100.0, 200.0)
+
+
+func spawn_kill_wave(enemy_count: int, p_speed_min: float, p_speed_max: float) -> void:
+	if container == null:
+		push_error("CrowdSpawner: container_path not set.")
+		return
+
+	clear()
+	await get_tree().process_frame
+
+	var viewport_size := get_viewport().get_visible_rect().size
+	var margin := 60.0
+	var used_positions: Array[Vector2] = []
+
+	for i in range(enemy_count):
+		var npc := CrowdNPC.new()
+		npc.size = Vector2(square_size, square_size)
+
+		var pos := _get_random_position_final(viewport_size, margin, used_positions, square_size)
+		used_positions.append(pos)
+		npc.position = pos
+
+		# All enemies move and are red (sinners)
+		var speed := randf_range(p_speed_min, p_speed_max)
+		var angle := randf_range(0.0, TAU)
+		var vel := Vector2(cos(angle), sin(angle)) * speed
+		npc.setup(true, true, vel, square_size, ui_top_margin)
+		npc.set_walkable_areas(walkable_areas)
+		npc.selected.connect(_on_npc_selected)
+
+		container.add_child(npc)
+		npcs.append(npc)
+
+		npc.mouse_filter = Control.MOUSE_FILTER_STOP
+
+
+func _get_random_position_final(viewport_size: Vector2, margin: float, used_positions: Array[Vector2], sq_size: float) -> Vector2:
+	var max_attempts := 100
+	var min_distance := sq_size * 1.2
+
+	# If we have walkable areas, use them
+	if walkable_areas.size() > 0:
+		for _attempt in range(max_attempts):
+			var area := walkable_areas[randi() % walkable_areas.size()]
+			var x := randf_range(area.position.x + margin * 0.2, area.end.x - sq_size - margin * 0.2)
+			var y := randf_range(area.position.y + margin * 0.2, area.end.y - sq_size - margin * 0.2)
+			var pos := Vector2(x, y)
+
+			if not is_point_in_walkable_area(pos + Vector2(sq_size / 2, sq_size / 2)):
+				continue
+
+			var ok := true
+			for used in used_positions:
+				if pos.distance_to(used) < min_distance:
+					ok = false
+					break
+
+			if ok:
+				return pos
+
+		if walkable_areas.size() > 0:
+			var area := walkable_areas[0]
+			return area.position + area.size / 2 - Vector2(sq_size / 2, sq_size / 2)
+
+	for _attempt in range(max_attempts):
+		var x := randf_range(margin, viewport_size.x - margin - sq_size)
+		var y := randf_range(ui_top_margin + margin * 0.3, viewport_size.y - margin - sq_size)
+		var pos := Vector2(x, y)
+
+		var ok := true
+		for used in used_positions:
+			if pos.distance_to(used) < min_distance:
+				ok = false
+				break
+
+		if ok:
+			return pos
+
+	return Vector2(
+		randf_range(margin, viewport_size.x - margin - sq_size),
+		randf_range(ui_top_margin + margin * 0.3, viewport_size.y - margin - sq_size)
 	)

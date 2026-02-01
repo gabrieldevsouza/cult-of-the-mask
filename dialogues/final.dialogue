@@ -1,31 +1,36 @@
 ~ final
 
-# Frases ao matar durante o final (randomizadas no código)
+# Kill phrases during the final (randomized in code)
 
 ~ kill_1
-Prota: MORRA!
+Elisa: DIE!
 
 ~ kill_2
-Prota: PEREÇA SER INFERIOR!
+Elisa: PERISH, INFERIOR BEING!
 
 ~ kill_3
-Prota: NÃO CHEGUE PERTO SEU ANIMAL, VOCÊ NÃO MERECE A MINHA LUZ!
+Elisa: DON'T COME NEAR ME YOU ANIMAL, YOU DON'T DESERVE MY LIGHT!
 
-# Final 1 - Não conseguiu matar todos (é atacada)
-~ ending_bad
-[center]A multidão avança sobre ela...[/center]
-[center]Sons de sangue e carne ecoam pela praça vazia.[/center]
+# Ending 1 - Didn't kill everyone (gets attacked)
+~ ending_bad_1
+[center]The crowd advances upon her...[/center]
+=> END
+
+~ ending_bad_2
+[center]Sounds of blood and flesh echo through the empty square.[/center]
 [center]...[/center]
-[center]Ela se arrasta para fora da cidade, derrotada.[/center]
+[center]She crawls out of the city, defeated.[/center]
+=> END
 
-# Final 2 - Matou todos
+# Ending 2 - Killed everyone
 ~ ending_good
-Prota: Acabou. Eu purifiquei a todos.
-Prota: Não há mais nada. Não há mais nada para eles.
-Prota: Não há mais nada para mim.
-Prota: Inexistência é pureza e perfeição.
-Prota: Agora apenas eu serei abençoada. Eu sou o tudo e o todo.
-Prota: ...
-Prota: Onde estão minhas indulgências. Onde estão meus servos divinos?
-Prota: VENHAM A MIM!
-Prota: SE MINHAS LAMÚRIAS ALCANÇAM ALGUÉM, NÃO OUSE ME DEIXAR FALANDO SOZINHA!
+Elisa: It's over. I have purified everyone.
+Elisa: There is nothing left. There is nothing left for them.
+Elisa: There is nothing left for me.
+Elisa: Nonexistence is purity and perfection.
+Elisa: Now only I shall be blessed. I am everything and the whole.
+Elisa: ...
+Elisa: Where are my indulgences. Where are my divine servants?
+Elisa: COME TO ME!
+Elisa: IF MY LAMENTATIONS REACH ANYONE, DON'T YOU DARE LEAVE ME TALKING ALONE!
+=> END
