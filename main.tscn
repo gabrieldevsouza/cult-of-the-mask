@@ -15,6 +15,8 @@
 [ext_resource type="Texture2D" uid="uid://dbkdc3ks0qlyd" path="res://scenario/banco_escuro_right.png" id="13_banco2"]
 [ext_resource type="Texture2D" uid="uid://dryw2lcohbrf3" path="res://scenario/POSTE_QUEBRADO_1.png" id="14_poste_q1"]
 [ext_resource type="Texture2D" uid="uid://bug1xqkdhftdw" path="res://scenario/POSTE_QUEBRADO_2.png" id="15_poste_q2"]
+[ext_resource type="Texture2D" path="res://images/monoculo_grande.png" id="16_monoculo_grande"]
+[ext_resource type="Texture2D" path="res://images/relogio_grande.png" id="17_relogio_grande"]
 
 [node name="Main" type="Node2D" unique_id=1542657908]
 script = ExtResource("1_main")
@@ -69,7 +71,7 @@ texture = ExtResource("11_casa3")
 [node name="ScoreLabel" type="Label" parent="UI" unique_id=565645906]
 offset_right = 280.0
 offset_bottom = 40.0
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 38
 text = "Score: 0"
 
 [node name="MessageLabel" type="Label" parent="UI" unique_id=702935493]
@@ -81,7 +83,7 @@ offset_top = 60.0
 offset_right = 200.0
 offset_bottom = 100.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 34
 text = "Find the red square!"
 horizontal_alignment = 1
 
@@ -108,7 +110,7 @@ offset_top = -80.0
 offset_right = 300.0
 offset_bottom = -10.0
 grow_vertical = 0
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 
 [node name="Squares" type="Control" parent="." unique_id=945801387]
 layout_mode = 3
@@ -151,7 +153,7 @@ scale = Vector2(2.5, 2.5)
 texture = ExtResource("15_poste_q2")
 
 [node name="FadeLayer" type="CanvasLayer" parent="." unique_id=1526556980]
-layer = 100
+layer = 200
 
 [node name="FadeRect" type="ColorRect" parent="FadeLayer" unique_id=257461890]
 anchors_preset = 15
@@ -202,19 +204,19 @@ theme_override_constants/separation = 20
 [node name="Title" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=1684779427]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 52
+theme_override_font_sizes/font_size = 62
 text = "GAME OVER"
 horizontal_alignment = 1
 
 [node name="WaveLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=76453112]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 38
 text = "Wave reached: 0"
 horizontal_alignment = 1
 
 [node name="KillsLabel" type="Label" parent="FadeLayer/GameOverPanel/VBox" unique_id=213355835]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 38
 text = "Sinners eliminated: 0"
 horizontal_alignment = 1
 
@@ -226,14 +228,14 @@ layout_mode = 2
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "Play Again"
 
 [node name="MenuButton" type="Button" parent="FadeLayer/GameOverPanel/VBox" unique_id=220954681]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "Back to Menu"
 
 [node name="PausePanel" type="Control" parent="FadeLayer" unique_id=593376695]
@@ -273,7 +275,7 @@ theme_override_constants/separation = 20
 [node name="Title" type="Label" parent="FadeLayer/PausePanel/VBox" unique_id=86425832]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 52
 text = "PAUSED"
 horizontal_alignment = 1
 
@@ -285,15 +287,107 @@ layout_mode = 2
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "Resume"
 
 [node name="PauseMenuButton" type="Button" parent="FadeLayer/PausePanel/VBox" unique_id=506506437]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "Back to Menu"
+
+[node name="TutorialPanel" type="Control" parent="FadeLayer"]
+unique_name_in_owner = true
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Background" type="ColorRect" parent="FadeLayer/TutorialPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="ContentBox" type="MarginContainer" parent="FadeLayer/TutorialPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -200.0
+offset_right = 320.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 25
+
+[node name="Panel" type="Panel" parent="FadeLayer/TutorialPanel/ContentBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="FadeLayer/TutorialPanel/ContentBox"]
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/separation = 25
+
+[node name="Title" type="Label" parent="FadeLayer/TutorialPanel/ContentBox/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.5, 1)
+theme_override_font_sizes/font_size = 36
+text = "New Item!"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="FadeLayer/TutorialPanel/ContentBox/VBox"]
+layout_mode = 2
+mouse_filter = 1
+size_flags_vertical = 3
+theme_override_constants/separation = 30
+
+[node name="ItemImage" type="TextureRect" parent="FadeLayer/TutorialPanel/ContentBox/VBox/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("16_monoculo_grande")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Description" type="Label" parent="FadeLayer/TutorialPanel/ContentBox/VBox/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 22
+text = "Item description goes here..."
+autowrap_mode = 2
+
+[node name="OkButton" type="Button" parent="FadeLayer/TutorialPanel/ContentBox/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 28
+text = "OK"
 
 [node name="CrowdSpawner" type="Node" parent="." unique_id=1806782616]
 script = ExtResource("2_0xm2m")
@@ -428,3 +522,5 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[connection signal="pressed" from="FadeLayer/TutorialPanel/ContentBox/VBox/OkButton" to="." method="_close_tutorial"]

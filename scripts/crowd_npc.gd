@@ -28,12 +28,15 @@ var use_walkable_areas := false
 # Efeito monóculo
 var monoculo_active := false
 var pulse_tween: Tween = null
+var sparkle_sprite: TextureRect = null
+const SPARKLE_TEXTURE := preload("res://sprites/ice_sparkles.png")
 
 # Sprite animation
 var sprite: TextureRect
 var sprite_sheet_left: Texture2D
 var sprite_sheet_right: Texture2D
 var current_direction := 1  # 1 = right, -1 = left
+var sinner_sprite_index := -1  # Which sinner sprite is being used (-1 = innocent)
 
 # Animation
 const FRAME_COUNT := 6
@@ -75,12 +78,26 @@ func setup(_is_sinner: bool, _debug_show_sinner: bool, _velocity: Vector2, _squa
 		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(sprite)
 
+	# Create sparkle sprite for monoculo effect (hidden by default)
+	if sparkle_sprite == null:
+		sparkle_sprite = TextureRect.new()
+		sparkle_sprite.texture = SPARKLE_TEXTURE
+		sparkle_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		sparkle_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		sparkle_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sparkle_sprite.visible = false
+		# Position sparkle on top of the NPC (larger, centered)
+		sparkle_sprite.size = Vector2(square_size * 1.5, square_size * 1.5)
+		sparkle_sprite.position = Vector2(-square_size * 0.25, -square_size * 0.25)
+		add_child(sparkle_sprite)
+
 	# Load sprite sheets
 	if is_sinner:
-		var sinner_index := randi() % SINNER_SPRITES.size()
-		sprite_sheet_left = load(SINNER_SPRITES[sinner_index][0])
-		sprite_sheet_right = load(SINNER_SPRITES[sinner_index][1])
+		sinner_sprite_index = randi() % SINNER_SPRITES.size()
+		sprite_sheet_left = load(SINNER_SPRITES[sinner_sprite_index][0])
+		sprite_sheet_right = load(SINNER_SPRITES[sinner_sprite_index][1])
 	else:
+		sinner_sprite_index = -1  # Innocent
 		sprite_sheet_left = load(INNOCENT_SPRITE_LEFT)
 		sprite_sheet_right = load(INNOCENT_SPRITE_RIGHT)
 
@@ -254,6 +271,9 @@ func apply_monoculo_effect() -> void:
 	if not is_sinner or monoculo_active:
 		return
 	monoculo_active = true
+	# Show sparkle effect
+	if sparkle_sprite:
+		sparkle_sprite.visible = true
 	_start_pulse()
 
 
@@ -261,18 +281,25 @@ func _start_pulse() -> void:
 	if pulse_tween and is_instance_valid(pulse_tween):
 		pulse_tween.kill()
 
+	if not sparkle_sprite:
+		return
+
 	pulse_tween = create_tween()
 	pulse_tween.set_loops()
 
-	pulse_tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.4).set_ease(Tween.EASE_IN_OUT)
-	pulse_tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.4).set_ease(Tween.EASE_IN_OUT)
+	# Pulse the sparkle sprite, not the character
+	pulse_tween.tween_property(sparkle_sprite, "modulate:a", 0.4, 0.4).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(sparkle_sprite, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 
 
 func stop_monoculo_effect() -> void:
 	monoculo_active = false
 	if pulse_tween and is_instance_valid(pulse_tween):
 		pulse_tween.kill()
-	scale = Vector2(1.0, 1.0)
+	# Hide sparkle effect
+	if sparkle_sprite:
+		sparkle_sprite.visible = false
+		sparkle_sprite.modulate.a = 1.0
 
 
 func freeze() -> void:

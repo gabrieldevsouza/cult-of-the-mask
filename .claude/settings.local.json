@@ -5,7 +5,14 @@
       "Bash(move \"find-the-square\\\\main.gd\" .)",
       "Bash(move \"find-the-square\\\\main.gd.uid\" .)",
       "Bash(move \"find-the-square\\\\main.tscn\" .)",
-      "Bash(move \"find-the-square\\\\dialogues\" .)"
+      "Bash(move \"find-the-square\\\\dialogues\" .)",
+      "Bash(for file in *.png)",
+      "Bash(do echo \"$file:\")",
+      "Bash(identify:*)",
+      "Bash(python:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

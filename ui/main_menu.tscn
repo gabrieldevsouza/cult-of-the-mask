@@ -167,7 +167,7 @@ horizontal_alignment = 1
 
 [node name="Content" type="Label" parent="CreditsPanel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 text = "Art and Design:
 By Theodora D. and Ananda Bispo
 
@@ -177,7 +177,7 @@ horizontal_alignment = 1
 
 [node name="MusicTitle" type="Label" parent="CreditsPanel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 text = "Music and Sound:"
 horizontal_alignment = 1
 
@@ -189,7 +189,7 @@ theme_override_constants/separation = 60
 [node name="Column1" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 24
 text = "Dark Theme
 JaggedStone (CC0)
 opengameart.org/content/dark-theme
@@ -202,7 +202,7 @@ horizontal_alignment = 1
 [node name="Column2" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 24
 text = "Dragged Through Hellfire
 Zander Noriega (CC-BY 3.0)
 opengameart.org/content/dragged-through-hellfire
@@ -216,7 +216,7 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "Back"
 
 [node name="ControlsPanel" type="Panel" parent="."]
@@ -250,14 +250,14 @@ theme_override_constants/separation = 8
 
 [node name="Title" type="Label" parent="ControlsPanel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 38
 text = "Controls"
 horizontal_alignment = 1
 
 [node name="Content" type="Label" parent="ControlsPanel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 text = "Mouse:
 Left Click - Select/Interact
 
@@ -271,7 +271,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "Back"
 
 [node name="InfiniteModePanel" type="Panel" parent="."]
@@ -305,7 +305,7 @@ theme_override_constants/separation = 15
 
 [node name="Title" type="Label" parent="InfiniteModePanel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 38
 text = "Select Mode"
 horizontal_alignment = 1
 
@@ -313,21 +313,21 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "Find"
 
 [node name="KillButton" type="Button" parent="InfiniteModePanel/VBox"]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "Kill"
 
 [node name="BackButton" type="Button" parent="InfiniteModePanel/VBox"]
 custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 text = "Back"
 
 [node name="GGJLogo" type="TextureRect" parent="."]

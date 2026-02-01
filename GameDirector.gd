@@ -32,6 +32,29 @@ var round_active := false
 @onready var pause_menu_button: Button = $FadeLayer/PausePanel/VBox/PauseMenuButton
 var is_paused := false
 
+# Tutorial UI
+@onready var tutorial_panel: Control = %TutorialPanel
+@onready var tutorial_item_image: TextureRect = %ItemImage
+@onready var tutorial_description: Label = %Description
+@onready var tutorial_ok_button: Button = %OkButton
+var tutorial_shown := {}  # Track which items have shown tutorial
+var tutorial_active := false
+
+const TUTORIAL_TITLES := {
+	"monoculo": "New Item!",
+	"relogio": "New Item!",
+}
+
+const TUTORIAL_IMAGES := {
+	"monoculo": preload("res://images/monoculo_grande.png"),
+	"relogio": preload("res://images/relogio_grande.png"),
+}
+
+const TUTORIAL_DESCRIPTIONS := {
+	"monoculo": "MONOCLE OF TRUTH\n\nReveals sinners with a special glow. Lasts 3 waves.",
+	"relogio": "POCKET WATCH\n\nSlows down all NPCs. Lasts 3 waves.",
+}
+
 # Scenario elements (to hide in infinite mode)
 @onready var scenario_casa1: Sprite2D = $ScenarioBackground/Casa1
 @onready var scenario_casa2: Sprite2D = $ScenarioBackground/Casa2
@@ -66,7 +89,6 @@ const PRINCIPAL_DIALOGUES := {
 const PHASE_ITEMS := {
 	2: { 3: "monoculo" },
 	3: { 1: "relogio" },
-	4: { 3: "visao_fase4" },
 }
 
 const NPCS_PER_PHASE := {
@@ -104,7 +126,6 @@ var kill_wave_time := 20.0  # Time per wave in kill mode
 var item_collected_wave := {
 	"monoculo": -1,
 	"relogio": -1,
-	"visao_fase4": -1,
 	"rosario": -1,
 }
 const ITEM_DURATION := 3  # Item lasts 3 waves including collection wave
@@ -151,6 +172,12 @@ func _ready() -> void:
 	if pause_panel:
 		pause_panel.hide()
 
+	# Connect tutorial button
+	if tutorial_ok_button:
+		tutorial_ok_button.pressed.connect(_close_tutorial)
+	if tutorial_panel:
+		tutorial_panel.hide()
+
 	# Connect background clicks
 	if squares_container:
 		squares_container.gui_input.connect(_on_background_input)
@@ -185,7 +212,12 @@ func _play_fade_in() -> void:
 	if scenario_igreja:
 		scenario_igreja.show()
 
+	# Create dialogue balloon first (with background image)
 	_start_intro_dialogue()
+
+	# Then fade in from black - background image will be visible during fade
+	var tween := create_tween()
+	tween.tween_property(fade_rect, "modulate:a", 0.0, 1.2)
 
 
 func _start_intro_dialogue() -> void:
@@ -193,14 +225,19 @@ func _start_intro_dialogue() -> void:
 	get_tree().current_scene.add_child(balloon)
 
 	DialogueManager.dialogue_ended.connect(_on_intro_ended, CONNECT_ONE_SHOT)
-	# Hide character portraits during intro dialogue (only show dialogue box)
-	balloon.start(INTRO_DIALOGUE, "start", [], false)
+	# Hide character portraits during intro dialogue, show background image
+	balloon.start(INTRO_DIALOGUE, "start", [], false, true)
 
 
 func _on_intro_ended(_resource) -> void:
 	if state != GameState.CUTSCENE:
 		return
-	_fade_to_phase(2)
+	# Instantly go to black before balloon is destroyed
+	fade_rect.modulate.a = 1.0
+	# Then fade in to phase 2
+	_start_phase(2)
+	var tween := create_tween()
+	tween.tween_property(fade_rect, "modulate:a", 0.0, 0.8)
 
 
 # ============== INFINITE MODE ==============
@@ -356,8 +393,6 @@ func _expire_item(item_name: String) -> void:
 	match item_name:
 		"relogio":
 			crowd_spawner.speed_modifier = 1.0
-		"visao_fase4":
-			crowd_spawner.distractor_modifier = 1.0
 
 
 func _handle_kill_infinite(npc: CrowdNPC) -> void:
@@ -921,6 +956,9 @@ func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	npc.freeze()
 	_position_npc_beside_protagonist(npc)
 
+	# Set sprite info for visual novel
+	GameMode.set_current_npc_sprite(npc.sinner_sprite_index, npc.is_sinner)
+
 	var phase_items = PHASE_ITEMS.get(current_phase, {})
 	if phase_items.has(npc_dialogue_index):
 		pending_item = phase_items[npc_dialogue_index]
@@ -946,6 +984,9 @@ func _on_npc_dialogue_ended(_resource) -> void:
 		current_dialogue_npc.unfreeze()
 	current_dialogue_npc = null
 
+	# Clear sprite info
+	GameMode.clear_current_npc_sprite()
+
 	if pending_item != "":
 		Inventory.collect(pending_item)
 		pending_item = ""
@@ -965,6 +1006,9 @@ func _handle_kill(npc: CrowdNPC) -> void:
 		_set_crowd_clickable(false)
 		npc.freeze()
 		_position_npc_beside_protagonist(npc)
+
+		# Set sprite info for visual novel
+		GameMode.set_current_npc_sprite(npc.sinner_sprite_index, true)
 
 		# Flash no sinner (sound plays after dialogue in _advance_phase)
 		var tween := create_tween()
@@ -1045,8 +1089,12 @@ func _on_item_collected(item_name: String) -> void:
 	_update_items_ui()
 
 	# Som de coleta de item (especial para itens importantes)
-	var is_special := item_name in ["monoculo", "relogio", "visao_fase4", "rosario"]
+	var is_special := item_name in ["monoculo", "relogio", "rosario"]
 	AudioManager.play_item_collect(is_special)
+
+	# Show tutorial if first time collecting this item
+	if item_name in TUTORIAL_DESCRIPTIONS and not tutorial_shown.get(item_name, false):
+		_show_tutorial(item_name)
 
 	var duration_msg := " (lasts 3 waves)" if GameMode.is_infinite() else ""
 
@@ -1057,15 +1105,41 @@ func _on_item_collected(item_name: String) -> void:
 		"relogio":
 			message_label.text = "Clock obtained! NPCs are slower." + duration_msg
 			crowd_spawner.apply_relogio_effect()
-		"visao_fase4":
-			message_label.text = "Vision obtained! Fewer distractors." + duration_msg
-			crowd_spawner.apply_visao_effect()
 		"calice":
 			_apply_calice_effect()
 		"lagrima":
 			_apply_lagrima_effect()
 		"rosario":
 			message_label.text = "Corrupted Rosary obtained! Every 5 kills, gain 1 life." + duration_msg
+
+
+func _show_tutorial(item_name: String) -> void:
+	if not tutorial_panel or not TUTORIAL_IMAGES.has(item_name):
+		return
+
+	tutorial_shown[item_name] = true
+	tutorial_active = true
+
+	# Set image and description
+	tutorial_item_image.texture = TUTORIAL_IMAGES[item_name]
+	tutorial_description.text = TUTORIAL_DESCRIPTIONS[item_name]
+
+	# Show panel and pause timer
+	tutorial_panel.show()
+	tutorial_ok_button.grab_focus()
+	round_active = false  # Pause the timer
+
+
+func _close_tutorial() -> void:
+	if not tutorial_panel:
+		return
+
+	tutorial_active = false
+	tutorial_panel.hide()
+
+	# Resume timer if game is in playing state
+	if state == GameState.PLAYING or state == GameState.FINAL_PHASE:
+		round_active = true
 
 
 func _update_items_ui() -> void:
@@ -1077,33 +1151,26 @@ func _update_items_ui() -> void:
 	if Inventory.has("monoculo"):
 		var remaining := _get_item_remaining_waves("monoculo")
 		if remaining > 0:
-			items_text += "🔍 Monocle (%d)\n" % remaining
+			items_text += "🔍 Monocle [%d waves]\n" % remaining
 		else:
 			items_text += "🔍 Monocle\n"
 
 	if Inventory.has("relogio"):
 		var remaining := _get_item_remaining_waves("relogio")
 		if remaining > 0:
-			items_text += "⏱️ Clock (%d)\n" % remaining
+			items_text += "⏱️ Clock [%d waves]\n" % remaining
 		else:
 			items_text += "⏱️ Clock\n"
-
-	if Inventory.has("visao_fase4"):
-		var remaining := _get_item_remaining_waves("visao_fase4")
-		if remaining > 0:
-			items_text += "👁️ Vision (%d)\n" % remaining
-		else:
-			items_text += "👁️ Vision\n"
 
 	if Inventory.has("rosario"):
 		var remaining := _get_item_remaining_waves("rosario")
 		if remaining > 0:
-			items_text += "✝ Rosary (%d) [%d/%d]\n" % [remaining, rosario_kill_count, ROSARIO_KILLS_FOR_LIFE]
+			items_text += "✝ Rosary [%d waves] %d/%d kills\n" % [remaining, rosario_kill_count, ROSARIO_KILLS_FOR_LIFE]
 		else:
-			items_text += "✝ Rosary [%d/%d]\n" % [rosario_kill_count, ROSARIO_KILLS_FOR_LIFE]
+			items_text += "✝ Rosary %d/%d kills\n" % [rosario_kill_count, ROSARIO_KILLS_FOR_LIFE]
 
 	if lagrima_active:
-		items_text += "💧 Tear (next wave)\n"
+		items_text += "💧 Tear [next wave]\n"
 
 	items_label.text = items_text
 

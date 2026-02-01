@@ -6,10 +6,10 @@ signal item_collected(item_name: String)
 const COLLECTIBLE_SCENE = preload("res://scripts/collectible_item.tscn")
 
 # Persistent items (stay in inventory until reset)
-const PERSISTENT_ITEMS := ["monoculo", "relogio", "visao_fase4", "rosario"]
+const PERSISTENT_ITEMS := ["monoculo", "relogio", "rosario"]
 # Instant items (immediate effect, can spawn again)
 const INSTANT_ITEMS := ["calice", "lagrima"]
-const AVAILABLE_ITEMS := ["monoculo", "relogio", "visao_fase4", "rosario", "calice", "lagrima"]
+const AVAILABLE_ITEMS := ["monoculo", "relogio", "rosario", "calice", "lagrima"]
 
 @export var container_path: NodePath
 @export var base_spawn_chance := 0.12
