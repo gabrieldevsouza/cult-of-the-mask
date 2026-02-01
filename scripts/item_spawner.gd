@@ -11,7 +11,6 @@ const PERSISTENT_ITEMS := ["monoculo", "relogio", "visao_fase4", "rosario"]
 const INSTANT_ITEMS := ["calice", "lagrima"]
 # All items combined
 const AVAILABLE_ITEMS := ["monoculo", "relogio", "visao_fase4", "calice", "lagrima", "rosario"]
-const AVAILABLE_ITEMS := ["monoculo", "relogio", "visao_fase4"]
 
 @export var container_path: NodePath
 @export var base_spawn_chance := 0.30

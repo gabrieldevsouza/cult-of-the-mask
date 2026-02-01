@@ -593,9 +593,6 @@ func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	var needed: int = int(NPCS_PER_PHASE.get(current_phase, 0))
 
 	if npc.is_sinner:
-		if npc_dialogue_index < needed:
-			message_label.text = "Converse com mais %d pessoa(s)..." % (needed - npc_dialogue_index)
-			return
 		state = GameState.PLAYING
 		_handle_kill(npc)
 		return
@@ -613,7 +610,7 @@ func _handle_npc_dialogue(npc: CrowdNPC) -> void:
 	npc_dialogue_index += 1
 
 	current_dialogue_npc = npc
-	npc.color = Color(0.5, 0.1, 0.1)
+	npc.set_tint(Color(0.5, 0.1, 0.1))
 
 	var phase_items = PHASE_ITEMS.get(current_phase, {})
 	if phase_items.has(npc_dialogue_index):
@@ -637,7 +634,7 @@ func _on_npc_dialogue_ended(_resource) -> void:
 	in_dialogue = false
 
 	if current_dialogue_npc and is_instance_valid(current_dialogue_npc):
-		current_dialogue_npc.color = Color.GRAY
+		current_dialogue_npc.set_tint(Color.GRAY)
 	current_dialogue_npc = null
 
 	if pending_item != "":
@@ -681,7 +678,7 @@ func _handle_optional_citizen_dialogue(npc: CrowdNPC) -> void:
 	npc_dialogue_index += 1
 
 	current_dialogue_npc = npc
-	npc.color = Color(0.5, 0.1, 0.1)
+	npc.set_tint(Color(0.5, 0.1, 0.1))
 
 	# Check if this NPC gives an item
 	var phase_items = PHASE_ITEMS.get(current_phase, {})
@@ -789,7 +786,7 @@ func _spawn_final_enemies() -> void:
 	for npc in crowd_spawner.npcs:
 		if is_instance_valid(npc):
 			npc.is_sinner = true
-			npc.color = Color(0.8, 0.2, 0.2)  # Red color
+			npc.set_tint(Color(0.8, 0.2, 0.2))  # Red color
 
 	_set_crowd_clickable(true)
 

@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://menu001"]
+[gd_scene format=3 uid="uid://menu001"]
 
-[ext_resource type="Script" path="res://ui/main_menu.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cqwps5r727gtj" path="res://ui/main_menu.gd" id="1_script"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.1, 0.1, 0.1, 0.9)
@@ -14,7 +14,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=614134021]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1599073439]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,7 +32,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.05, 0.02, 0.08, 1)
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="." unique_id=2029854797]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -47,7 +47,7 @@ text = "CULT OF THE MASK"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="."]
+[node name="Subtitle" type="Label" parent="." unique_id=1030148253]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -57,12 +57,12 @@ offset_top = 135.0
 offset_right = 250.0
 offset_bottom = 170.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.7, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 20
 text = "A Limpeza dos Nao Integros"
 horizontal_alignment = 1
 
-[node name="MainButtons" type="VBoxContainer" parent="."]
+[node name="MainButtons" type="VBoxContainer" parent="." unique_id=755607197]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -77,37 +77,37 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="StartButton" type="Button" parent="MainButtons"]
+[node name="StartButton" type="Button" parent="MainButtons" unique_id=1995051502]
 custom_minimum_size = Vector2(240, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Iniciar"
 
-[node name="InfiniteModeButton" type="Button" parent="MainButtons"]
+[node name="InfiniteModeButton" type="Button" parent="MainButtons" unique_id=1150982497]
 custom_minimum_size = Vector2(240, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Modo Infinito"
 
-[node name="ControlsButton" type="Button" parent="MainButtons"]
+[node name="ControlsButton" type="Button" parent="MainButtons" unique_id=1390361517]
 custom_minimum_size = Vector2(240, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Controles"
 
-[node name="CreditsButton" type="Button" parent="MainButtons"]
+[node name="CreditsButton" type="Button" parent="MainButtons" unique_id=153234837]
 custom_minimum_size = Vector2(240, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Creditos"
 
-[node name="QuitButton" type="Button" parent="MainButtons"]
+[node name="QuitButton" type="Button" parent="MainButtons" unique_id=1992126089]
 custom_minimum_size = Vector2(240, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Sair"
 
-[node name="CreditsPanel" type="Panel" parent="."]
+[node name="CreditsPanel" type="Panel" parent="." unique_id=381367334]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -123,7 +123,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBox" type="VBoxContainer" parent="CreditsPanel"]
+[node name="VBox" type="VBoxContainer" parent="CreditsPanel" unique_id=1460201799]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -136,13 +136,13 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="CreditsPanel/VBox"]
+[node name="Title" type="Label" parent="CreditsPanel/VBox" unique_id=1636312245]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Creditos"
 horizontal_alignment = 1
 
-[node name="Content" type="Label" parent="CreditsPanel/VBox"]
+[node name="Content" type="Label" parent="CreditsPanel/VBox" unique_id=651529024]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Desenvolvedores:
@@ -152,18 +152,18 @@ Arte e Design:
 Theodora D. e Anandra Bispo"
 horizontal_alignment = 1
 
-[node name="MusicTitle" type="Label" parent="CreditsPanel/VBox"]
+[node name="MusicTitle" type="Label" parent="CreditsPanel/VBox" unique_id=680924764]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Musicas e Sons:"
 horizontal_alignment = 1
 
-[node name="MusicColumns" type="HBoxContainer" parent="CreditsPanel/VBox"]
+[node name="MusicColumns" type="HBoxContainer" parent="CreditsPanel/VBox" unique_id=1449371990]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 40
 
-[node name="Column1" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
+[node name="Column1" type="Label" parent="CreditsPanel/VBox/MusicColumns" unique_id=1400371677]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
@@ -176,7 +176,7 @@ qubodup (CC0)
 opengameart.org/content/dark-shrine-loop"
 horizontal_alignment = 1
 
-[node name="Column2" type="Label" parent="CreditsPanel/VBox/MusicColumns"]
+[node name="Column2" type="Label" parent="CreditsPanel/VBox/MusicColumns" unique_id=1609674603]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
@@ -189,14 +189,14 @@ Iwan Gabovitch (CC-BY 3.0)
 opengameart.org/content/dark-ambience-loop"
 horizontal_alignment = 1
 
-[node name="BackButton" type="Button" parent="CreditsPanel/VBox"]
+[node name="BackButton" type="Button" parent="CreditsPanel/VBox" unique_id=762530961]
 custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
 text = "Voltar"
 
-[node name="ControlsPanel" type="Panel" parent="."]
+[node name="ControlsPanel" type="Panel" parent="." unique_id=2094685726]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -212,7 +212,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBox" type="VBoxContainer" parent="ControlsPanel"]
+[node name="VBox" type="VBoxContainer" parent="ControlsPanel" unique_id=2099906917]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -225,13 +225,13 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="ControlsPanel/VBox"]
+[node name="Title" type="Label" parent="ControlsPanel/VBox" unique_id=1704852442]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Controles"
 horizontal_alignment = 1
 
-[node name="Content" type="Label" parent="ControlsPanel/VBox"]
+[node name="Content" type="Label" parent="ControlsPanel/VBox" unique_id=1101674146]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 18
@@ -244,14 +244,14 @@ SPACE/ENTER - Avancar dialogo"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BackButton" type="Button" parent="ControlsPanel/VBox"]
+[node name="BackButton" type="Button" parent="ControlsPanel/VBox" unique_id=619358780]
 custom_minimum_size = Vector2(180, 45)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
 text = "Voltar"
 
-[node name="Version" type="Label" parent="."]
+[node name="Version" type="Label" parent="." unique_id=1783573774]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -263,8 +263,8 @@ offset_top = -30.0
 offset_right = -10.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 14
 text = "v0.1 Alpha"
 horizontal_alignment = 2
 
